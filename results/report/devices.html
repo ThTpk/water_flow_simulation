@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>รู้จักอุปกรณ์ดันน้ำ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -330,4 +331,13 @@ $("plates").innerHTML = DEV.map((d) => {
   $("cmp").innerHTML = h + "</tbody>";
 })();
 })();
+</script>
+<script>
+// บน GitHub Pages / เครื่องตัวเอง ลิงก์ Artifact (เปิดได้เฉพาะเจ้าของ) → ไฟล์ใน repo
+if (/github\.io$|^localhost$|^127\./.test(location.hostname)) {
+  const M = {"Vf9PB4iDFeDjsLaFNwfxej": "../web3d/all_boats.html", "ANtNr7iZx6SH1rFP1KxjF4": "../web3d/curtain_vs_propeller.html", "JE1Jv9MbfgKN2gUZhTfXmz": "../web3d/tugboat.html", "4Ux9aGxeW28uDeYGU8LkmT": "boat_test_summary.html", "BYHNRDJQbgMDRPGiZYQUtU": "devices.html"};
+  document.querySelectorAll('a[href^="https://claude.ai/artifact/"]').forEach((a) => {
+    const id = a.href.split('/').pop(); if (M[id]) a.href = M[id];
+  });
+}
 </script>

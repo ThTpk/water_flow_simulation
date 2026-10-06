@@ -1,3 +1,4 @@
+<meta charset="utf-8">
 <title>ผลทดสอบเรือดันน้ำ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -107,16 +108,16 @@ ul.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column;
       <span>Q ปกติ <b class="num">128.9 ม³/วิ</b></span>
       <span>ความเร็วเฉลี่ย <b class="num">0.77 ม./วิ</b></span>
       <span>ช่วงจำลอง <b class="num">150 ม.</b> (~2 ล้านเซลล์)</span>
-      <span>อัปเดต <b>5 ต.ค. 2569</b></span>
+      <span>อัปเดต <b>6 ต.ค. 2569</b></span>
     </div>
     <div class="status" aria-label="สถานะการทดสอบ">
       <span class="pill done">1 ชนิดเรือ ✓</span>
       <span class="pill done">2 จำนวนเรือ ✓</span>
-      <span class="pill run">3 ระดับน้ำ · กำลังรัน</span>
-      <span class="pill run">4 มุมใบพัด · กำลังรัน</span>
-      <span class="pill run">5 การจัดแถว · กำลังรัน</span>
+      <span class="pill done">3 ระดับน้ำ ✓</span>
+      <span class="pill done">4 มุมใบพัด ✓</span>
+      <span class="pill done">5 การจัดแถว ✓</span>
       <span class="pill done">6 หัวฉีด/ม่านน้ำ ✓</span>
-      <span class="pill run">คลองประเวศ 1 กม. · กำลังรัน</span>
+      <span class="pill run">คลองประเวศ 500 ม. · 3 จาก 4 กรณี</span>
     </div>
   </header>
 
@@ -127,7 +128,10 @@ ul.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column;
       <li><span class="big">×4–8<small>ส่วนต่างความคุ้มค่า</small></span><b>ขยับน้ำมากด้วยความเร็วต่ำ ดีกว่าฉีดแรง</b><span>แรงขับต่อกำลังของใบพัดเพิ่มตามขนาดใบพัด ส่วนหัวฉีดได้ T = 2ηP/v ยิ่งฉีดเร็วยิ่งได้แรงน้อย เรือหางยาวและ outboard ใช้ 240–400 kW ต่อการลด 1 ซม.</span></li>
       <li><span class="big">+0.05<small>ซม. (สูงขึ้น)</small></span><b>หัวฉีดแรงดันสูง 100 บาร์ไม่ได้ผล</b><span>แรงขับ 3 kN น้อยกว่าแรงต้านของทุ่นเอง ระดับน้ำกลับสูงขึ้น สายน้ำหายไปใน 8 ม. ฉีดกระจาย ±30° ยิ่งแย่ลง</span></li>
       <li><span class="big">−9.4<small>ซม. ที่ 1800 kW</small></span><b>เรือลากจูงได้ผลรวมมากที่สุด แต่เสี่ยงกัดเซาะสูงมาก</b><span>เพิ่ม Q ได้ 21.5% แต่แรงเฉือนท้องน้ำสูงสุด 607 N/ม² (ปกติ 3.9) เพราะใบพัด 1.2 ม. อยู่ใกล้ท้องน้ำในน้ำลึก 3 ม.</span></li>
-      <li><span class="big">394→191<small>kW/ซม. เมื่อ 1→3 ลำ</small></span><b>วางเรือหลายลำเรียงขวางคุ้มขึ้น</b><span>เรือลำเดียวยังแพ้แรงต้านตัวเรือ (ผิวน้ำท้ายเรือช้าลง 11%) เมื่อเพิ่มเป็น 3 ลำ สายน้ำรวมกันจนการลดระดับน้ำต่อกำลังดีขึ้น 2 เท่า แถวที่สองตามหลังได้ผลต่อกำลังลดลงเล็กน้อย</span></li>
+      <li><span class="big">399→192<small>kW/ซม. เมื่อ 1→3 ลำ</small></span><b>วางเรือหลายลำเรียงขวางคุ้มขึ้น</b><span>เรือลำเดียวยังแพ้แรงต้านตัวเรือ (ผิวน้ำท้ายเรือช้าลง 11%) เมื่อเพิ่มเป็น 3 ลำ สายน้ำรวมกันจนการลดระดับน้ำต่อกำลังดีขึ้น 2 เท่า แถวที่สองตามหลังได้ผลต่อกำลังลดลงเล็กน้อย</span></li>
+      <li><span class="big">210→528<small>kW/ซม. 1×6 → 3×2</small></span><b>เรียงขวางแถวเดียว ดีกว่าเรียงต่อกันตามลำน้ำ</b><span>เรือหางยาว 6 ลำเท่ากัน เรียงขวางแถวเดียวลดระดับน้ำได้ 2.1 ซม. ส่วน 3 แถว × 2 ได้แค่ 0.85 ซม. เพราะเรือแถวหลังดันน้ำที่ไหลเร็วอยู่แล้วในสายน้ำของแถวหน้า</span></li>
+      <li><span class="big">0–12°<small>มุมเพลาใบพัด</small></span><b>อย่ากดใบพัดลงชัน</b><span>มุม 0° และ 12° ได้ผลใกล้กัน (222 และ 234 kW/ซม.) แต่ที่ 25° แรงขับส่วนหนึ่งชี้ลงท้องน้ำ ผลลดเหลือราวครึ่งหนึ่ง (412 kW/ซม.) และแรงเฉือนท้องน้ำเพิ่มเป็น 2.4 เท่า</span></li>
+      <li><span class="big">×73<small>แรงเฉือนท้องน้ำตอนน้ำต่ำ</small></span><b>ระดับน้ำเปลี่ยนผลมาก: ได้ผลตอนน้ำต่ำ แต่กัดเซาะหนัก · แทบไม่ได้ผลตอนน้ำสูง</b><span>เรือหางยาว 4 ลำ (300 kW) ตอนน้ำลึก 1 ม. ลดระดับน้ำได้ 2.6 ซม. แต่สายน้ำกระแทกท้องน้ำ แรงเฉือนสูงถึง 108 N/ม² (ปกติ 1.5) ตอนน้ำลึก 5 ม. ที่น้ำไหล 469 ม³/วิ ลดได้แค่ 0.04 ซม. เพราะกำลังเท่าเดิมเทียบกับน้ำที่มากกว่าเกือบ 4 เท่า</span></li>
     </ol>
   </section>
 
@@ -165,27 +169,40 @@ ul.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column;
     </div>
 
     <div class="test">
-      <h3>6) หัวฉีดน้ำ / ม่านน้ำ เทียบใบพัด ที่กำลังรวม 300 kW เท่ากัน</h3>
-      <p class="q">สิ่งที่ดันน้ำคือโมเมนตัม (มวล × ความเร็ว) ไม่ใช่แรงดัน</p>
-      <div class="tbl"><table id="t6"></table></div>
+      <h3>3) ระดับน้ำ</h3>
+      <p class="q">เรือหางยาว 4 ลำ (300 kW) ที่น้ำต่ำ ปานกลาง และสูง ในลำน้ำเดียวกัน</p>
+      <div class="tbl"><table id="t3"></table></div>
+      <p class="note">ความเสี่ยงกัดเซาะเทียบกับแรงเฉือนตอนไม่มีเรือที่ระดับน้ำเดียวกัน (1.5 / 3.9 / 8.1 N/ม²) ตอนน้ำต่ำใบพัดอยู่ใกล้ท้องน้ำมาก จึงเสี่ยงกัดเซาะสูงแม้ลดระดับน้ำได้ดีที่สุด</p>
     </div>
 
     <div class="test">
-      <h3>3) ระดับน้ำ · 4) มุมใบพัด · 5) การจัดแถว</h3>
-      <div class="pending">
-        <b>กำลังรันทีละการทดสอบ (GPU 30%)</b>
-        <span class="note">3) เรือหางยาว 4 ลำที่น้ำต่ำ/กลาง/สูง · 4) มุมเพลาใบพัด 0°, 12°, 25° · 5) เรือหางยาว 6 ลำ จัดเป็น 1×6, 2×3, 3×2 — จะเพิ่มผลในหน้านี้เมื่อเสร็จ</span>
-      </div>
+      <h3>4) มุมใบพัด</h3>
+      <p class="q">เรือหางยาว 4 ลำ (300 kW) ปรับมุมเพลาใบพัดที่กดลงจากแนวนอน 0°, 12° และ 25°</p>
+      <div class="tbl"><table id="t4"></table></div>
+      <p class="note">แรงขับเท่ากันทุกกรณี แต่ที่ 25° แรงสุทธิที่ดันน้ำไปตามลำน้ำเหลือ 8.5 kN จาก 20 kN เพราะสายน้ำพุ่งลงไปเสียดสีกับท้องน้ำ</p>
+    </div>
+
+    <div class="test">
+      <h3>5) การจัดแถว</h3>
+      <p class="q">เรือหางยาว 6 ลำ (450 kW) เรียงขวางแถวเดียว, 2 แถว × 3 และ 3 แถว × 2 (แถวห่างกัน 25 ม.)</p>
+      <div class="tbl"><table id="t5"></table></div>
+      <p class="note">กำลังและแรงขับเท่ากัน แต่ยิ่งเรียงต่อกันหลายแถว ยิ่งลดระดับน้ำได้น้อย ระยะสายน้ำนับจากแถวหลังสุด จึงสั้นลงตามจำนวนแถว</p>
+    </div>
+
+    <div class="test">
+      <h3>6) หัวฉีดน้ำ / ม่านน้ำ เทียบใบพัด ที่กำลังรวม 300 kW เท่ากัน</h3>
+      <p class="q">สิ่งที่ดันน้ำคือโมเมนตัม (มวล × ความเร็ว) ไม่ใช่แรงดัน</p>
+      <div class="tbl"><table id="t6"></table></div>
     </div>
   </section>
 
   <section aria-labelledby="h-3d">
     <h2 id="h-3d">ภาพเคลื่อนไหว 3 มิติ</h2>
     <div class="links">
-      <a href="https://claude.ai/artifact/Vf9PB4iDFeDjsLaFNwfxej" target="_blank" rel="noopener"><b>เทียบเรือดันน้ำทุกแบบ</b><span>8 อุปกรณ์ + ไม่มีเรือ ในหน้าเดียว</span></a>
+      <a href="https://claude.ai/artifact/Vf9PB4iDFeDjsLaFNwfxej" target="_blank" rel="noopener"><b>เทียบเรือดันน้ำทุกแบบ</b><span>แม่น้ำ 9 กรณี และคลองประเวศ เลือกได้ในหน้าเดียว</span></a>
       <a href="https://claude.ai/artifact/ANtNr7iZx6SH1rFP1KxjF4" target="_blank" rel="noopener"><b>ม่านน้ำเทียบใบพัดใหญ่</b><span>300 kW เท่ากัน</span></a>
       <a href="https://claude.ai/artifact/JE1Jv9MbfgKN2gUZhTfXmz" target="_blank" rel="noopener"><b>เรือลากจูง 3 มิติ</b><span>สายน้ำและแรงเฉือนท้องน้ำ</span></a>
-      <div><b>คลองประเวศบุรีรมย์ 1 กม.</b><span>กำลังจำลอง — กว้าง 40 ม. ลึก 4 ม. น้ำไหล 0.3 ม./วิ</span></div>
+      <a href="https://claude.ai/artifact/Vf9PB4iDFeDjsLaFNwfxej" target="_blank" rel="noopener"><b>คลองประเวศบุรีรมย์ 500 ม.</b><span>กด "คลองประเวศ" ในหน้าเทียบ — กว้าง 40 ม. ลึก 4 ม. น้ำไหล 0.3 ม./วิ (เรือลากจูงกำลังจำลอง)</span></a>
     </div>
   </section>
 
@@ -212,10 +229,22 @@ const T1 = [
   { label: "เรือลากจูง ×3", P: 1800, T: 251.09, TkW: 139.5, F: 174.77, d: -9.42, kpc: 191, us: 8.3, tau: 606.8, dq: 21.54, dqT: 29.83 },
   { label: "ทุ่นผลักดันน้ำ ×3", P: 90, T: 32.77, TkW: 364.1, F: 28.58, d: -1.76, kpc: 51, us: 2.2, tau: 5.36, dq: 3.83, dqT: 4.38 }];
 const T2 = [
-  { label: "เรือลากจูง ×1", P: 600, T: 83.7, F: 52.57, d: -1.52, kpc: 394, us: -10.7, tau: 603.3, dq: 6.94, dqT: 10.84 },
-  { label: "เรือลากจูง ×2", P: 1200, T: 167.39, F: 110.36, d: -4.68, kpc: 257, us: -0.5, tau: 589.1, dq: 14.08, dqT: 20.71 },
-  { label: "เรือลากจูง ×3", P: 1800, T: 251.09, F: 174.77, d: -9.42, kpc: 191, us: 8.3, tau: 606.8, dq: 21.54, dqT: 29.83 },
-  { label: "เรือลากจูง 2 แถว × 3", P: 3600, T: 502.18, F: 308.17, d: -17.47, kpc: 206, us: 24.5, tau: 677.3, dq: 35.70, dqT: 53.99 }];
+  { label: "เรือลากจูง ×1", h: 3, Q: 128.9, P: 600, T: 83.70, TkW: 139.5, F: 52.24, d: -1.50, kpc: 399, us: -10.7, reach: 95, tau: 603.34, tau0: 3.89, dq: 6.89, dqT: 10.84 },
+  { label: "เรือลากจูง ×2", h: 3, Q: 128.9, P: 1200, T: 167.39, TkW: 139.5, F: 110.36, d: -4.68, kpc: 257, us: -0.5, reach: 95, tau: 589.09, tau0: 3.89, dq: 14.08, dqT: 20.71 },
+  { label: "เรือลากจูง ×3", h: 3, Q: 128.9, P: 1800, T: 251.09, TkW: 139.5, F: 174.35, d: -9.39, kpc: 192, us: 8.3, reach: 95, tau: 606.83, tau0: 3.89, dq: 21.49, dqT: 29.83 },
+  { label: "เรือลากจูง 2 แถว×3", h: 3, Q: 128.9, P: 3600, T: 502.18, TkW: 139.5, F: 307.71, d: -17.43, kpc: 207, us: 24.5, reach: 55, tau: 677.30, tau0: 3.89, dq: 35.65, dqT: 53.99 }];
+const T3 = [
+  { label: "น้ำต่ำ", h: 1, Q: 20.2, P: 300, T: 26.36, TkW: 87.9, F: 13.01, d: -2.56, kpc: 117, us: -13.0, reach: 98, tau: 108.43, tau0: 1.49, dq: 5.58, dqT: 11.02 },
+  { label: "น้ำปานกลาง", h: 3, Q: 128.9, P: 300, T: 26.36, TkW: 87.9, F: 19.84, d: -1.28, kpc: 234, us: 2.3, reach: 98, tau: 8.41, tau0: 3.89, dq: 2.67, dqT: 3.54 },
+  { label: "น้ำสูง", h: 5, Q: 468.9, P: 300, T: 26.36, TkW: 87.9, F: 2.17, d: -0.04, kpc: 6805, us: 0.5, reach: 98, tau: 19.06, tau0: 8.13, dq: 0.13, dqT: 1.54 }];
+const T4 = [
+  { label: "มุม 0°", h: 3, Q: 128.9, P: 300, T: 26.36, TkW: 87.9, F: 20.16, d: -1.35, kpc: 222, us: 3.5, reach: 98, tau: 8.45, tau0: 3.89, dq: 2.72, dqT: 3.54 },
+  { label: "มุม 12°", h: 3, Q: 128.9, P: 300, T: 26.36, TkW: 87.9, F: 19.84, d: -1.28, kpc: 234, us: 2.3, reach: 98, tau: 8.41, tau0: 3.89, dq: 2.67, dqT: 3.54 },
+  { label: "มุม 25°", h: 3, Q: 128.9, P: 300, T: 26.36, TkW: 87.9, F: 8.45, d: -0.73, kpc: 412, us: 0.9, reach: 98, tau: 20.42, tau0: 3.89, dq: 1.15, dqT: 3.54 }];
+const T5 = [
+  { label: "1 แถว × 6", h: 3, Q: 128.9, P: 450, T: 39.54, TkW: 87.9, F: 32.34, d: -2.14, kpc: 210, us: 9.8, reach: 98, tau: 9.05, tau0: 3.89, dq: 4.32, dqT: 5.26 },
+  { label: "2 แถว × 3", h: 3, Q: 128.9, P: 450, T: 39.54, TkW: 87.9, F: 24.85, d: -1.21, kpc: 373, us: 7.7, reach: 73, tau: 13.12, tau0: 3.89, dq: 3.34, dqT: 5.26 },
+  { label: "3 แถว × 2", h: 3, Q: 128.9, P: 450, T: 39.54, TkW: 87.9, F: 23.85, d: -0.85, kpc: 528, us: 9.9, reach: 48, tau: 10.27, tau0: 3.89, dq: 3.20, dqT: 5.26 }];
 const T6 = [
   { label: "ใบพัดใหญ่ 100 kW ×3", P: 300, T: 73.11, TkW: 243.7, F: 67.62, d: -3.83, kpc: 78, us: 13.0, reach: 103, tau: 11.97, dq: 8.84, dqT: 9.53 },
   { label: "ฉีด 100 บาร์ ตรง ×3", P: 300, T: 2.97, TkW: 9.9, F: -1.29, d: 0.05, kpc: null, us: -2.8, reach: 8, tau: 4.62, dq: -0.18, dqT: 0.40 },
@@ -227,8 +256,8 @@ const ALL = [...T1, ...T6.filter((r) => !r.label.includes("กระจาย"))
 const $ = (id) => document.getElementById(id);
 const f = (v, dp) => (v == null ? "–" : (v > 0 && dp >= 0 && v < 0 ? "" : "") + v.toFixed(dp));
 const sgn = (v, dp) => (v == null ? "–" : (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(dp));
-function risk(tau) {
-  const r = tau / TAU0;
+function risk(tau, base) {
+  const r = tau / (base || TAU0);
   const [cls, txt] = r <= 3 ? ["ok", "ต่ำ"] : r <= 10 ? ["warn", "ปานกลาง"] : ["bad", "สูง"];
   return `<span class="risk ${cls}">${txt} ×${r < 10 ? r.toFixed(1) : Math.round(r)}</span>`;
 }
@@ -290,9 +319,23 @@ const C = {
   F: ["แรงสุทธิ kN", 0, (r) => r.F.toFixed(1)], d: ["ระดับน้ำ ซม.", 0, (r) => sgn(r.d, 2)],
   kpc: ["kW/ซม.", 0, (r) => (r.kpc == null ? "ไม่ลด" : r.kpc)], us: ["ผิวน้ำท้ายเรือ %", 0, (r) => sgn(r.us, 1)],
   reach: ["สายน้ำไปได้ ม.", 0, (r) => (r.reach >= 100 ? "> 100" : r.reach)],
-  dq: ["Q เพิ่ม %", 0, (r) => sgn(r.dq, 1)], tau: ["กัดเซาะ", 0, (r) => risk(r.tau), true]};
+  dq: ["Q เพิ่ม %", 0, (r) => sgn(r.dq, 1)], tau: ["กัดเซาะ", 0, (r) => risk(r.tau, r.tau0), true],
+  h: ["ลึก ม.", 0, (r) => r.h], Q: ["Q ปกติ ม³/วิ", 0, (r) => r.Q.toFixed(1)],
+  tauv: ["แรงเฉือนสูงสุด N/ม²", 0, (r) => r.tau.toFixed(1)]};
 table($("t1"), T1, [C.P, C.T, C.TkW, C.d, C.kpc, C.us, C.dq, C.tau]);
 table($("t2"), T2, [C.P, C.T, C.F, C.d, C.kpc, C.us, C.dq, C.tau]);
 table($("t6"), T6, [C.T, C.TkW, C.F, C.d, C.kpc, C.reach, C.dq, C.tau]);
+table($("t3"), T3, [C.h, C.Q, C.F, C.d, C.kpc, C.dq, C.tauv, C.tau]);
+table($("t4"), T4, [C.F, C.d, C.kpc, C.us, C.dq, C.tauv, C.tau]);
+table($("t5"), T5, [C.F, C.d, C.kpc, C.reach, C.dq, C.tauv, C.tau]);
 })();
+</script>
+<script>
+// บน GitHub Pages / เครื่องตัวเอง ลิงก์ Artifact (เปิดได้เฉพาะเจ้าของ) → ไฟล์ใน repo
+if (/github\.io$|^localhost$|^127\./.test(location.hostname)) {
+  const M = {"Vf9PB4iDFeDjsLaFNwfxej": "../web3d/all_boats.html", "ANtNr7iZx6SH1rFP1KxjF4": "../web3d/curtain_vs_propeller.html", "JE1Jv9MbfgKN2gUZhTfXmz": "../web3d/tugboat.html", "4Ux9aGxeW28uDeYGU8LkmT": "boat_test_summary.html", "BYHNRDJQbgMDRPGiZYQUtU": "devices.html"};
+  document.querySelectorAll('a[href^="https://claude.ai/artifact/"]').forEach((a) => {
+    const id = a.href.split('/').pop(); if (M[id]) a.href = M[id];
+  });
+}
 </script>
