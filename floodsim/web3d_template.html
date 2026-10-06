@@ -81,6 +81,17 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
 .qcap { position: absolute; top: -3px; bottom: -3px; width: 0; border-left: 1.5px dashed var(--fg); opacity: .55; }
 .qsum { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; line-height: 1.5; }
 .qsum b { font-family: var(--font-data); font-weight: 500; }
+.nav { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.nav a {
+  display: flex; flex-direction: column; gap: 2px; height: 100%; box-sizing: border-box; padding: 6px 8px;
+  color: var(--fg); text-decoration: none; font-size: 12.5px; font-weight: 500; line-height: 1.35;
+  background: #13232a; border: 1px solid var(--line); border-radius: 6px;
+}
+.nav a span, .scenes button span { color: var(--muted); font-size: 11px; font-weight: 400; }
+.nav a:hover { border-color: var(--accent); }
+.nav a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.scenes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.scenes button { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; line-height: 1.35; font-weight: 500; }
 #toggle { display: none; }
 #hud { position: fixed; right: 14px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); font-family: var(--font-data); font-size: 11px; color: var(--muted); pointer-events: none; }
 #err { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
@@ -101,6 +112,16 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
     <p class="sub" id="subt"></p>
   </div>
 
+  <div class="sec" id="scenesec" hidden>
+    <span class="lbl">ลำน้ำ</span>
+    <div class="scenes" id="scenes"></div>
+  </div>
+
+  <nav class="sec" id="navsec" aria-label="หน้าอื่นในชุดนี้" hidden>
+    <span class="lbl">หน้าอื่น</span>
+    <ul class="nav" id="nav"></ul>
+  </nav>
+
   <div class="sec">
     <span class="lbl">กรณีที่แสดง (วางเทียบกันขวางลำน้ำ)</span>
     <div class="cases" id="cases"></div>
@@ -116,7 +137,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
     <div class="row"><label for="km">วางกลุ่มเรือซ้ำทุก</label><input id="km" type="range" min="0.5" max="5" step="0.5" value="1"><output id="kmo">1 กม.</output></div>
     <div id="qbars" class="cases"></div>
     <ul class="qsum" id="qsum"></ul>
-    <p class="note">ในช่วงจำลอง 150 ม. ปริมาณน้ำที่ทางเข้าถูกกำหนดไว้ ค่า Q ที่เพิ่มจึงประมาณจากแรงสุทธิที่น้ำได้รับจริง
+    <p class="note">ในช่วงจำลอง <span id="lnote">150</span> ม. ปริมาณน้ำที่ทางเข้าถูกกำหนดไว้ ค่า Q ที่เพิ่มจึงประมาณจากแรงสุทธิที่น้ำได้รับจริง
       (หักแรงต้านตัวเรือและแรงเสียดทานที่เพิ่มแล้ว) ด้วยสมดุลโมเมนตัม Q′/Q = √(1 + F / ρgALS) เมื่อวางกลุ่มเรือซ้ำทุกระยะ L
       ตลอดลำน้ำ — เส้นประ = ขอบเขตบนถ้าแรงขับทั้งหมดถึงน้ำ</p>
   </div>
@@ -170,7 +191,25 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
 (async function () {
 "use strict";
 if (!window.THREE) { document.body.insertAdjacentHTML("beforeend", '<div id="err">โหลด three.js ไม่ได้ — ตรวจการเชื่อมต่ออินเทอร์เน็ต</div>'); return; }
-const D = JSON.parse(document.getElementById("data").textContent);
+const ALL = JSON.parse(document.getElementById("data").textContent);
+const esc = (t) => String(t).replace(/[&<>"]/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[ch]);
+let D = ALL;
+if (ALL.scenes && ALL.scenes.length) {
+  const want = decodeURIComponent(location.hash.slice(1));
+  D = ALL.scenes.find((s) => s.key === want) || ALL.scenes[0];
+  document.getElementById("scenes").innerHTML = ALL.scenes.map((s) =>
+    `<button type="button" data-scene="${esc(s.key)}" aria-pressed="${s === D}">${esc(s.label)}<span>${esc(s.note || "")}</span></button>`).join("");
+  document.querySelectorAll("[data-scene]").forEach((b) => b.onclick = () => {
+    if (b.dataset.scene === D.key) return;
+    location.hash = b.dataset.scene; location.reload();
+  });
+  document.getElementById("scenesec").hidden = false;
+}
+if (ALL.links && ALL.links.length) {
+  document.getElementById("nav").innerHTML = ALL.links.map((l) =>
+    `<li><a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)}<span>${esc(l.note || "")}</span></a></li>`).join("");
+  document.getElementById("navsec").hidden = false;
+}
 // ข้อมูลสนามความเร็วของหน้าที่มีหลายกรณีเก็บแยกไฟล์ (src) — โหลดก่อนเริ่ม
 for (const c of D.cases) {
   if (!c.src) continue;
@@ -466,7 +505,7 @@ function cam(kind) {
 }
 
 // ---------- panel
-$("ttl").textContent = D.title; $("subt").textContent = D.subtitle;
+$("ttl").textContent = D.title; $("subt").textContent = D.subtitle; $("lnote").textContent = Math.round(Lmax);
 const caseBox = $("cases");
 cases.forEach((c, k) => {
   const l = document.createElement("label"); l.className = "case";
