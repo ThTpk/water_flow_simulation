@@ -1,0 +1,333 @@
+<title>รู้จักอุปกรณ์ดันน้ำ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: field-guide column (~920px). Principle first, then one plate per device: a true-scale side section of the water column beside its specs, like an engineering catalogue. */
+:root {
+  --paper: #f3f6f5;
+  --sheet: #fbfcfc;
+  --ink: #15262b;
+  --muted: #5b6f74;
+  --rule: #d5dfdf;
+  --water: #1f7f8f;          /* accent */
+  --water-fill: #cfe6ea;     /* water body in drawings */
+  --bed: #b9ab92;            /* riverbed */
+  --hull: #e9edec;
+  --hull-line: #5b6f74;
+  --thrust: #d0702a;         /* propeller / nozzle / jet */
+  --good: #2c8a5a; --warn: #b7791f; --bad: #c2405a;
+  --font-display: "Bai Jamjuree", "IBM Plex Sans Thai", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Thai", "Leelawadee UI", Tahoma, system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0d1719; --sheet: #121f22; --ink: #dce7e8; --muted: #8ea4a8; --rule: #24373b;
+  --water: #5cc3d2; --water-fill: #17363d; --bed: #5a5040; --hull: #c9d3d3; --hull-line: #8ea4a8; --thrust: #ef9a52;
+  --good: #5cc28b; --warn: #e0a84a; --bad: #ef7a90; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #0d1719; --sheet: #121f22; --ink: #dce7e8; --muted: #8ea4a8; --rule: #24373b;
+  --water: #5cc3d2; --water-fill: #17363d; --bed: #5a5040; --hull: #c9d3d3; --hull-line: #8ea4a8; --thrust: #ef9a52;
+  --good: #5cc28b; --warn: #e0a84a; --bad: #ef7a90; color-scheme: dark; }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.65; }
+.wrap { max-width: 920px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 64px; display: flex; flex-direction: column; gap: 48px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: 1.25; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(28px, 5vw, 40px); }
+h2 { font-size: 22px; }
+h3 { font-size: 19px; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--water); font-weight: 600; }
+.muted { color: var(--muted); }
+.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+header { display: flex; flex-direction: column; gap: 12px; }
+
+.principle { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.formulas { display: flex; flex-direction: column; gap: 10px; }
+.formula { background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; }
+.formula code { font-family: var(--font-data); font-size: 16px; color: var(--water); }
+.formula span { font-size: 13px; color: var(--muted); }
+svg text { font-family: var(--font-body); }
+.fig { background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: 12px; }
+.fig svg { width: 100%; height: auto; display: block; }
+.cap { font-size: 12.5px; color: var(--muted); margin-top: 6px; }
+
+.bars { display: flex; flex-direction: column; gap: 8px; }
+.bar { display: grid; grid-template-columns: minmax(0, 12em) 1fr minmax(0, 5.5em); gap: 10px; align-items: center; font-size: 13.5px; }
+.bar .track { height: 14px; background: color-mix(in srgb, var(--water) 14%, transparent); border-radius: 2px; position: relative; }
+.bar .fill { position: absolute; inset: 0 auto 0 0; background: var(--water); border-radius: 2px; }
+.bar .val { font-family: var(--font-data); font-size: 12.5px; text-align: right; font-variant-numeric: tabular-nums; }
+.axis { display: grid; grid-template-columns: minmax(0, 12em) 1fr minmax(0, 5.5em); gap: 10px; font-size: 11px; color: var(--muted); }
+.axis .ticks { display: flex; justify-content: space-between; font-family: var(--font-data); }
+
+.plates { display: flex; flex-direction: column; gap: 18px; }
+.plate { background: var(--sheet); border: 1px solid var(--rule); border-radius: 10px; padding: 18px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 18px 24px; scroll-margin-top: 16px; }
+.plate .top { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 14px; }
+.plate .kind { font-size: 12px; color: var(--muted); }
+.plate .lead { grid-column: 1 / -1; }
+.plate .draw { min-width: 0; }
+.plate .draw svg { width: 100%; height: auto; display: block; }
+.plate dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 14px; font-size: 13.5px; align-content: start; }
+.plate dt { color: var(--muted); }
+.plate dd { margin: 0; font-family: var(--font-data); font-variant-numeric: tabular-nums; text-align: right; }
+.plate .res { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.stat { border-top: 2px solid var(--rule); padding-top: 6px; display: flex; flex-direction: column; }
+.stat b { font-family: var(--font-data); font-weight: 500; font-size: 18px; }
+.stat span { font-size: 12px; color: var(--muted); }
+.stat.good { border-top-color: var(--good); } .stat.warn { border-top-color: var(--warn); } .stat.bad { border-top-color: var(--bad); }
+.pc { grid-column: 1 / -1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px 24px; font-size: 14px; }
+.pc ul { margin: 4px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 2px; }
+.pc h4 { margin: 0; font-size: 13px; font-weight: 600; }
+.pc .plus h4 { color: var(--good); } .pc .minus h4 { color: var(--bad); }
+.fit { grid-column: 1 / -1; font-size: 14px; border-left: 3px solid var(--water); padding-left: 10px; }
+.tag { font-size: 12px; border-radius: 999px; padding: 1px 10px; border: 1px solid currentColor; white-space: nowrap; }
+.tag.good { color: var(--good); } .tag.warn { color: var(--warn); } .tag.bad { color: var(--bad); }
+
+.toc { display: flex; flex-wrap: wrap; gap: 6px; }
+.toc a { font-size: 13px; color: var(--ink); text-decoration: none; border: 1px solid var(--rule); background: var(--sheet); border-radius: 999px; padding: 3px 12px; }
+.toc a:hover { border-color: var(--water); }
+a:focus-visible { outline: 2px solid var(--water); outline-offset: 2px; }
+
+.tbl { overflow-x: auto; border: 1px solid var(--rule); border-radius: 8px; background: var(--sheet); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 680px; }
+th, td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--rule); }
+th:first-child, td:first-child { text-align: left; }
+thead th { font-weight: 500; color: var(--muted); font-size: 12px; vertical-align: bottom; }
+tbody tr:last-child td { border-bottom: 0; }
+td.n { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+ol.choose { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; max-width: 72ch; }
+.note { font-size: 13px; color: var(--muted); }
+.links { display: flex; flex-wrap: wrap; gap: 8px; }
+.links a { color: var(--water); font-weight: 500; }
+
+@media (max-width: 680px) {
+  .principle, .plate, .pc { grid-template-columns: 1fr; }
+  .plate .res { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bar, .axis { grid-template-columns: minmax(0, 1fr) minmax(0, 5em); }
+  .bar .track, .axis .ticks { grid-column: 1 / -1; grid-row: 2; }
+  .axis span:first-child { display: none; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="eyebrow">คู่มือประกอบผลจำลอง 3 มิติ</span>
+    <h1>รู้จักอุปกรณ์ดันน้ำ</h1>
+    <p>อุปกรณ์ดันน้ำทุกแบบทำงานด้วยหลักเดียวกัน คือเติมโมเมนตัมให้น้ำ ต่างกันที่ว่าเอากำลังเครื่องไปขยับน้ำปริมาณเท่าไรและเร็วแค่ไหน หน้านี้อธิบายอุปกรณ์ 8 แบบที่ใช้ในการทดสอบ พร้อมค่าที่ตั้งไว้ในแบบจำลองและผลที่ได้</p>
+    <nav class="toc" id="toc" aria-label="อุปกรณ์"></nav>
+  </header>
+
+  <section aria-labelledby="h-p">
+    <h2 id="h-p">หลักการ: ขยับน้ำมาก ๆ ช้า ๆ ได้แรงมากกว่า</h2>
+    <div class="principle">
+      <div class="fig">
+        <svg viewBox="0 0 440 210" role="img" aria-label="เปรียบเทียบสายน้ำแคบเร็วกับสายน้ำกว้างช้าที่กำลังเท่ากัน">
+          <rect x="0" y="0" width="440" height="210" fill="var(--sheet)"/>
+          <text x="10" y="22" font-size="13" fill="var(--ink)" font-weight="600">กำลังเท่ากัน 100 kW</text>
+          <text x="10" y="60" font-size="12" fill="var(--muted)">หัวฉีดเล็ก</text>
+          <rect x="88" y="52" width="10" height="12" fill="var(--thrust)"/>
+          <rect x="98" y="56" width="320" height="4" fill="var(--thrust)"/>
+          <text x="104" y="84" font-size="12" fill="var(--ink)">เร็ว 141 ม./วิ · น้ำน้อย → แรงขับ ~1 kN</text>
+          <text x="10" y="138" font-size="12" fill="var(--muted)">ท่อใหญ่</text>
+          <rect x="88" y="112" width="10" height="56" fill="var(--thrust)"/>
+          <rect x="98" y="112" width="120" height="56" fill="var(--water)" opacity="0.55"/>
+          <polygon points="218,104 248,140 218,176" fill="var(--water)" opacity="0.55"/>
+          <text x="104" y="194" font-size="12" fill="var(--ink)">ช้า 3 ม./วิ · น้ำมาก → แรงขับ ~47 kN</text>
+        </svg>
+        <p class="cap">พลังงานที่ใส่ให้น้ำ = ½ṁv² แต่แรงที่ได้ = ṁv ใช้กำลังเท่ากัน ความเร็วยิ่งต่ำ มวลน้ำ ṁ ยิ่งมาก แรงยิ่งมาก</p>
+      </div>
+      <div class="formulas">
+        <div class="formula"><code>T = (2ρA·(ηP)²)<sup>⅓</sup></code><span>ใบพัด (ทฤษฎี actuator disk): A = พื้นที่จานใบพัด — ใบพัดใหญ่ 2 เท่า แรงขับเพิ่ม ~1.6 เท่าที่กำลังเดิม</span></div>
+        <div class="formula"><code>T = 2ηP / v</code><span>หัวฉีด/ปั๊ม: v = ความเร็วสายน้ำ = √(2Δp/ρ) — แรงดันยิ่งสูง สายน้ำยิ่งเร็ว แรงขับต่อกำลังยิ่งต่ำ</span></div>
+        <div class="formula"><code>T ∝ P<sup>⅔</sup></code><span>เพิ่มกำลังให้ใบพัดตัวเดิม ได้แรงเพิ่มช้ากว่ากำลัง — หลายเครื่องกำลังต่ำจึงคุ้มกว่าเครื่องเดียวกำลังสูง</span></div>
+        <p class="note">ρ = 1000 กก./ม³, η = ประสิทธิภาพ (ใบพัด 0.6, ปั๊ม 0.7), P = กำลังเครื่อง</p>
+      </div>
+    </div>
+    <h3>แรงขับต่อกำลังเครื่อง</h3>
+    <div class="bars" id="tkw"></div>
+    <div class="axis" id="tkw-axis"></div>
+  </section>
+
+  <section aria-labelledby="h-d">
+    <h2 id="h-d">อุปกรณ์แต่ละแบบ</h2>
+    <p class="muted">ภาพตัดด้านข้างวาดตามมาตราส่วนจริงเท่ากันทุกภาพ (กว้าง 30 ม.): น้ำลึก 3 ม. ตามการทดสอบ ลูกศรสีส้ม = ทิศและความเร็วของสายน้ำ (สเกลลอการิทึม) ผลการทดสอบเป็นกลุ่ม 3 ชุดเรียงขวางลำน้ำ</p>
+    <div class="plates" id="plates"></div>
+  </section>
+
+  <section aria-labelledby="h-t">
+    <h2 id="h-t">เทียบทุกแบบ</h2>
+    <div class="tbl"><table id="cmp"></table></div>
+  </section>
+
+  <section aria-labelledby="h-c">
+    <h2 id="h-c">เลือกอุปกรณ์อย่างไร</h2>
+    <ol class="choose">
+      <li><b>ดูแรงขับต่อ kW ก่อนกำลังเครื่อง</b> — อุปกรณ์ที่ขยับน้ำด้วยพื้นที่ใหญ่และความเร็วต่ำ (ทุ่นใบพัดใหญ่, ม่านน้ำ) ได้แรงต่อ kW มากกว่าเรือหางยาวหรือหัวฉีด 4–40 เท่า</li>
+      <li><b>ใช้หลายเครื่องกำลังต่ำ เรียงขวางลำน้ำ</b> — แรงขับเพิ่มตาม P^⅔ และเรือที่เรียงเต็มหน้าตัดทำให้น้ำไหลอ้อมได้น้อยลง</li>
+      <li><b>ระวังแรงต้านของตัวทุ่นหรือตัวเรือ</b> — อุปกรณ์ที่แรงขับน้อยกว่าแรงต้านในกระแสน้ำทำให้ระดับน้ำสูงขึ้น (หัวฉีด 100 บาร์)</li>
+      <li><b>ดูความลึกของใบพัดเทียบกับความลึกน้ำ</b> — ใบพัดใหญ่ใกล้ท้องน้ำ (เรือลากจูงในน้ำ 3 ม.) กัดเซาะท้องน้ำรุนแรงและเสียแรงไปกับแรงเสียดทาน</li>
+      <li><b>ใช้ข้อมูลจริงของเครื่อง</b> — ค่าในหน้านี้เป็นค่าประมาณ ใส่แรงขับที่วัดได้จริงหรือสเปกของผู้ผลิตแล้วรันแบบจำลองใหม่ได้</li>
+    </ol>
+    <div class="links">
+      <a href="https://claude.ai/artifact/4Ux9aGxeW28uDeYGU8LkmT" target="_blank" rel="noopener">ผลทดสอบเรือดันน้ำ ↗</a>
+      <a href="https://claude.ai/artifact/Vf9PB4iDFeDjsLaFNwfxej" target="_blank" rel="noopener">ภาพ 3 มิติ เทียบทุกแบบ ↗</a>
+    </div>
+  </section>
+</div>
+
+<script>
+(function () {
+"use strict";
+// ค่าจาก floodsim/reach3d.py (BOAT_TYPES) และผลจาก results/wallmodel (ลำน้ำลึก 3 ม., Q 128.9 ม³/วิ, กลุ่ม 3 ชุด)
+const DEV = [
+  { id: "curtain", name: "ม่านน้ำความเร็วต่ำ", kind: "ทุ่นลอย + ปั๊มไหลตามแกน 4 ท่อ",
+    lead: "ทุ่นติดปั๊มน้ำไหลตามแกน (axial-flow) ท่อใหญ่ 4 ท่อเรียงขวางกระแสน้ำ พ่นน้ำปริมาณมากไปข้างหน้าที่ความเร็วต่ำ เหมือนแผงน้ำกว้างที่ดันไปทั้งแผง เป็นแนวคิดที่กำหนดขึ้นเพื่อเปรียบเทียบ ไม่ใช่เครื่องรุ่นใดโดยเฉพาะ",
+    hull: [6, 6, 0.5], units: "4 ท่อ", D: 1.29, depth: 1.3, tilt: 0, px: 0.3, P: 25, Pu: 100, T: 11.67, v: 3.0, tkw: 467, duct: true,
+    res: { kpc: 45, d: -6.72, dq: 16.6, tau: 22.5, P: 300 },
+    plus: ["แรงขับต่อกำลังสูงสุด (~467 N/kW)", "ลดระดับน้ำต่อ kW ดีที่สุดในการทดสอบ", "สายน้ำกว้าง เร่งน้ำได้ทั้งหน้าตัด"],
+    minus: ["ปั๊มท่อ 1.3 ม. 4 ตัวต่อทุ่น ใหญ่และหนัก", "แบบจำลองยังไม่รวมการสูญเสียในท่อและปากดูด", "แรงเฉือนท้องน้ำสูงกว่าใบพัด ~2 เท่า"],
+    fit: "งานถาวรหรือกึ่งถาวรที่ต้องการลดระดับน้ำด้วยพลังงานน้อยที่สุด ควรติดท่อให้ตื้นเพื่อลดการกัดเซาะ" },
+  { id: "pontoon", name: "ทุ่นผลักดันน้ำ (ใบพัดใหญ่หมุนช้า)", kind: "ทุ่นลอย + ใบพัด 1.6 ม.",
+    lead: "ใบพัดเส้นผ่านศูนย์กลางใหญ่หมุนช้า ติดบนทุ่นลอยที่ยึดอยู่กับที่ ใช้กำลังเครื่องไม่มากแต่ขยับน้ำได้ปริมาณมาก ใกล้เคียงเครื่องผลักดันน้ำบนทุ่นที่หน่วยงานต่าง ๆ ใช้",
+    hull: [6, 4, 0.5], units: "1 ใบพัด", D: 1.6, depth: 1.3, tilt: 0, px: 0.5, P: 30, Pu: 30, T: 10.92, v: 3.3, tkw: 364,
+    res: { kpc: 51, d: -1.76, dq: 3.8, tau: 5.4, P: 90 },
+    plus: ["แรงขับต่อกำลังสูง (~364 N/kW)", "กัดเซาะท้องน้ำน้อยที่สุดในกลุ่มใบพัด", "เครื่องเล็ก ติดตั้งและย้ายง่าย"],
+    minus: ["แรงรวมต่อชุดน้อย ต้องใช้หลายชุด", "เพิ่มกำลังเป็น 100 kW ความคุ้มค่าลดลง (78 kW/ซม.)"],
+    fit: "ใช้หลายชุดเรียงขวางลำน้ำ เป็นตัวเลือกที่สมดุลที่สุดระหว่างความคุ้มค่า ความง่าย และการกัดเซาะ" },
+  { id: "pontoon100", name: "ใบพัดใหญ่กำลังสูง (100 kW)", kind: "ทุ่นลอย + ใบพัด 1.6 ม.",
+    lead: "ทุ่นแบบเดียวกับทุ่นผลักดันน้ำ แต่ใส่เครื่อง 100 kW ใช้ในการทดสอบ 6 เพื่อเทียบกับหัวฉีดและม่านน้ำที่กำลังรวม 300 kW เท่ากัน",
+    hull: [6, 4, 0.5], units: "1 ใบพัด", D: 1.6, depth: 1.3, tilt: 0, px: 0.5, P: 100, Pu: 100, T: 24.37, v: 4.9, tkw: 244,
+    res: { kpc: 78, d: -3.83, dq: 8.8, tau: 12.0, P: 300 },
+    plus: ["แรงต่อชุดมากขึ้น ใช้ทุ่นน้อยลง", "สายน้ำวิ่งใต้ผิวน้ำได้ไกล > 100 ม."],
+    minus: ["แรงขับต่อกำลังลดจาก 364 เหลือ 244 N/kW (T ∝ P^⅔)", "สายน้ำแคบกว่า กระจายตัวช้ากว่าม่านน้ำ"],
+    fit: "เมื่อจำนวนทุ่นหรือพื้นที่วางจำกัด แต่ถ้าเลือกได้ ใช้ทุ่นกำลังต่ำหลายชุดคุ้มกว่า" },
+  { id: "tug", name: "เรือลากจูง / เรือผลักดันน้ำ", kind: "เรือ 16 ม. + 2 ใบพัด 1.2 ม.",
+    lead: "เรือขนาดใหญ่ที่มีใบพัด 2 ตัวใต้ท้ายเรือ เครื่องประมาณ 400 แรงม้าต่อใบพัด ใช้ผลักดันน้ำด้วยการจอดนิ่งแล้วเดินเครื่อง",
+    hull: [16, 5, 1.8], units: "2 ใบพัด", D: 1.2, depth: 1.6, tilt: 0, px: -1.0, P: 300, Pu: 600, T: 41.85, v: 8.6, tkw: 139,
+    res: { kpc: 191, d: -9.42, dq: 21.5, tau: 607, P: 1800 },
+    plus: ["แรงรวมมากที่สุด ลดระดับน้ำได้มาก", "เคลื่อนย้ายได้เอง มีอยู่แล้วในหลายหน่วยงาน"],
+    minus: ["ใช้พลังงานมาก ความคุ้มค่าปานกลาง", "ใบพัดใกล้ท้องน้ำ: แรงเฉือนสูงกว่าปกติ ~150 เท่า กัดเซาะรุนแรง", "ตัวเรือใหญ่ กินน้ำลึก ขวางน้ำมาก"],
+    fit: "เหตุฉุกเฉินที่ต้องการผลเร็ว ในแม่น้ำที่ลึกพอ (> 5 ม.) หรือท้องน้ำแข็ง ไม่เหมาะกับคลองตื้นท้องดิน" },
+  { id: "longtail", name: "เรือหางยาว", kind: "เรือ 9 ม. + ใบพัด 0.3 ม. เพลายาว",
+    lead: "เครื่องยนต์รถยนต์ประมาณ 100 แรงม้า ต่อเพลายาวไปที่ใบพัดเล็กหมุนเร็ว อยู่ตื้นและกดลงประมาณ 12°",
+    hull: [9, 1.6, 0.35], units: "1 ใบพัด", D: 0.3, depth: 0.35, tilt: 12, px: 2.5, P: 75, Pu: 75, T: 6.59, v: 13.7, tkw: 88,
+    res: { kpc: 240, d: -0.94, dq: 2.1, tau: 9.6, P: 225 },
+    plus: ["หาง่าย ราคาถูก ระดมได้จำนวนมาก", "สายน้ำอยู่ใกล้ผิวน้ำ"],
+    minus: ["ใบพัดเล็กหมุนเร็ว แรงขับต่อกำลังต่ำ (~88 N/kW)", "สายน้ำเร็วแต่แคบ กระจายตัวเร็ว"],
+    fit: "ระดมเรือจำนวนมากในพื้นที่ที่ไม่มีอุปกรณ์อื่น ควรจอดเรียงขวางเต็มลำน้ำ" },
+  { id: "outboard", name: "เรือเครื่องท้าย (outboard)", kind: "เรือ 7 ม. + ใบพัด 0.36 ม.",
+    lead: "เครื่องติดท้ายประมาณ 150 แรงม้า ใบพัดแนวนอนขนาดเล็ก ออกแบบมาเพื่อวิ่งเร็ว ไม่ใช่เพื่อดันน้ำ",
+    hull: [7, 2.4, 0.5], units: "1 ใบพัด", D: 0.36, depth: 0.6, tilt: 0, px: 0.3, P: 110, Pu: 110, T: 9.61, v: 13.7, tkw: 87,
+    res: { kpc: 406, d: -0.81, dq: 1.4, tau: 9.5, P: 330 },
+    plus: ["หาง่าย เคลื่อนที่เร็ว"],
+    minus: ["คุ้มค่าน้อยที่สุดในกลุ่มใบพัด (406 kW/ซม.)", "ตัวเรือกว้าง ขวางน้ำ ผิวน้ำท้ายเรือกลับช้าลง 1%"],
+    fit: "ไม่แนะนำให้ใช้ดันน้ำ ถ้าจำเป็นให้ใช้ร่วมกับอุปกรณ์อื่น" },
+  { id: "jet_mp", name: "เครื่องฉีดน้ำแรงดันปานกลาง (10 บาร์)", kind: "ทุ่นลอย + ปั๊มหอยโข่ง 4 หัวฉีด",
+    lead: "ปั๊มหอยโข่งดันน้ำผ่านหัวฉีดขนาด ~2 ซม. สายน้ำออกที่ ~45 ม./วิ ดูแรงแต่ปริมาณน้ำน้อยมาก",
+    hull: [6, 4, 0.5], units: "4 หัวฉีด", D: 0.022, depth: 1.2, tilt: 0, px: 0.3, P: 25, Pu: 100, T: 0.78, v: 44.7, tkw: 31, jet: true,
+    res: { kpc: 967, d: -0.31, dq: 0.7, tau: 5.4, P: 300 },
+    plus: ["อุปกรณ์เล็ก ใช้ปั๊มทั่วไปได้"],
+    minus: ["แรงขับต่อกำลังต่ำ (~31 N/kW)", "แย่กว่าม่านน้ำ ~20 เท่าที่กำลังเท่ากัน"],
+    fit: "ไม่เหมาะกับการเร่งการไหล" },
+  { id: "jet_hp", name: "เครื่องฉีดน้ำแรงดันสูง (100 บาร์)", kind: "ทุ่นลอย + ปั๊มแรงดันสูง 4 หัวฉีด",
+    lead: "ปั๊มแรงดันสูงฉีดน้ำผ่านหัวฉีดขนาดไม่กี่มิลลิเมตร สายน้ำ ~141 ม./วิ ดูรุนแรงที่สุดแต่ดันน้ำได้น้อยที่สุด",
+    hull: [6, 4, 0.5], units: "4 หัวฉีด", D: 0.004, depth: 1.2, tilt: 0, px: 0.3, P: 25, Pu: 100, T: 0.25, v: 141.4, tkw: 10, jet: true,
+    res: { kpc: null, d: 0.05, dq: -0.2, tau: 4.6, P: 300 },
+    plus: ["ไม่มีข้อดีด้านการดันน้ำ"],
+    minus: ["แรงขับ (~10 N/kW) น้อยกว่าแรงต้านของทุ่นเอง ระดับน้ำกลับสูงขึ้น", "สายน้ำสลายตัวภายใน ~8 ม.", "ฉีดกระจาย ±30° ยิ่งแย่ลง (แรงด้านข้างหักล้างกัน)"],
+    fit: "ไม่ควรใช้เพื่อดันน้ำ" }];
+const TAU0 = 3.9;
+const $ = (id) => document.getElementById(id);
+const sgn = (v, dp) => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(dp);
+function riskOf(tau) { const r = tau / TAU0; return r <= 3 ? ["good", "ต่ำ"] : r <= 10 ? ["warn", "ปานกลาง"] : ["bad", "สูง"]; }
+function niceStep(x) { const p = Math.pow(10, Math.floor(Math.log10(x))); return [1, 2, 2.5, 5, 10].map((m) => m * p).find((s) => s >= x); }
+
+// สารบัญ
+$("toc").innerHTML = DEV.map((d) => `<a href="#${d.id}">${d.name.replace(/ \(.*\)$/, "")}</a>`).join("");
+
+// แรงขับต่อกำลัง
+(function () {
+  const rows = DEV.slice().sort((a, b) => b.tkw - a.tkw), max = rows[0].tkw, step = niceStep(max / 4), ticks = [];
+  for (let v = 0; ; v += step) { ticks.push(v); if (v >= max) break; }
+  const top = ticks[ticks.length - 1];
+  $("tkw").innerHTML = rows.map((d) => `<div class="bar"><span>${d.name.replace(/ \(.*\)$/, "")}</span>
+    <div class="track" role="img" aria-label="${d.name} ${d.tkw} นิวตันต่อกิโลวัตต์"><div class="fill" style="width:${d.tkw / top * 100}%"></div></div>
+    <span class="val">${d.tkw}</span></div>`).join("");
+  $("tkw-axis").innerHTML = `<span></span><div class="ticks">${ticks.map((v) => `<span>${v}</span>`).join("")}</div><span>N/kW</span>`;
+})();
+
+// ภาพตัดด้านข้าง: มาตราส่วนเดียวกันทุกภาพ (1 ม. = 18 px), ลำน้ำลึก 3 ม.
+function section(d) {
+  const S = 18, H = 3, FB = 1.0, L = 30, W = L * S, top = 14, wl = top + FB * S, bed = wl + H * S, Ht = bed + 26;
+  const [hl, , dr] = d.hull, x0 = 1.5, x1 = x0 + hl;
+  const X = (m) => m * S, Y = (z) => wl + z * S;   // z = ความลึกจากผิวน้ำ
+  const draft = Math.min(dr, 0.6 * H);
+  let s = `<svg viewBox="0 0 ${W} ${Ht}" role="img" aria-label="ภาพตัดด้านข้าง ${d.name}">`;
+  s += `<rect x="0" y="${wl}" width="${W}" height="${H * S}" fill="var(--water-fill)"/>`;
+  s += `<rect x="0" y="${bed}" width="${W}" height="8" fill="var(--bed)"/>`;
+  s += `<line x1="0" x2="${W}" y1="${wl}" y2="${wl}" stroke="var(--water)" stroke-width="1.2"/>`;
+  // ตัวเรือ: หัวเรียว (ซ้าย = หัวเรือ, น้ำไหลจากซ้ายไปขวา)
+  const bow = 0.25 * hl, yT = Y(-0.5), yB = Y(draft);
+  s += `<path d="M${X(x0)} ${yT} L${X(x1)} ${yT} L${X(x1)} ${yB} L${X(x0 + bow)} ${yB} Z" fill="var(--hull)" stroke="var(--hull-line)" stroke-width="1"/>`;
+  // ใบพัด / ท่อ / หัวฉีด
+  let depth = d.depth; const D = d.D;
+  if (d.px < 0 && depth < draft + 0.5 * D) depth = Math.min(draft + 0.5 * D, H - 0.5 * D);
+  const xp = x1 + d.px, t = d.tilt * Math.PI / 180, cx = X(xp), cy = Y(depth);
+  if (d.tilt > 0) s += `<line x1="${X(x1 - 0.3)}" y1="${Y(-0.2)}" x2="${cx}" y2="${cy}" stroke="var(--hull-line)" stroke-width="2"/>`;
+  if (d.jet) s += `<rect x="${cx - 6}" y="${cy - 3}" width="8" height="6" fill="var(--thrust)"/><line x1="${cx - 2}" y1="${Y(0)}" x2="${cx - 2}" y2="${cy}" stroke="var(--hull-line)" stroke-width="1.5"/>`;
+  else if (d.duct) s += `<rect x="${cx - 1.6 * S}" y="${cy - D / 2 * S}" width="${1.6 * S}" height="${D * S}" fill="none" stroke="var(--thrust)" stroke-width="2"/><line x1="${cx - 0.8 * S}" y1="${Y(0)}" x2="${cx - 0.8 * S}" y2="${cy - D / 2 * S}" stroke="var(--hull-line)" stroke-width="1.5"/>`;
+  else s += `<line x1="${cx}" y1="${cy - D / 2 * S * Math.cos(t)}" x2="${cx + D / 2 * S * Math.sin(t) * 2}" y2="${cy + D / 2 * S * Math.cos(t)}" stroke="var(--thrust)" stroke-width="3" stroke-linecap="round"/>`;
+  // ลูกศรสายน้ำ: ยาวตามลอการิทึมของความเร็ว (1 → 150 ม./วิ)
+  const len = (2.5 + 5.5 * Math.log10(d.v) / Math.log10(150)) * S, ex = cx + len * Math.cos(t), ey = cy + len * Math.sin(t);
+  const thick = Math.max(2, Math.min(D * S * 0.8, 20));
+  s += `<line x1="${cx + 4}" y1="${cy}" x2="${ex - 8}" y2="${ey}" stroke="var(--thrust)" stroke-width="${thick}" opacity="0.55"/>`;
+  s += `<polygon points="${ex},${ey} ${ex - 10},${ey - 6 - thick / 3} ${ex - 10},${ey + 6 + thick / 3}" fill="var(--thrust)"/>`;
+  s += `<text x="${(cx + ex) / 2}" y="${Math.min(ey, cy) - thick / 2 - 5}" font-size="12" text-anchor="middle" fill="var(--ink)">${d.v} ม./วิ</text>`;
+  // มาตราส่วน
+  s += `<line x1="${W - 4 - 5 * S}" x2="${W - 4}" y1="${bed + 20}" y2="${bed + 20}" stroke="var(--muted)" stroke-width="1.5"/><text x="${W - 4 - 5 * S}" y="${bed + 16}" font-size="10" fill="var(--muted)">5 ม.</text>`;
+  s += `<text x="4" y="${bed + 20}" font-size="10" fill="var(--muted)">ท้องน้ำ · ลึก 3 ม. · น้ำไหล →</text>`;
+  return s + "</svg>";
+}
+
+// แผ่นข้อมูลแต่ละอุปกรณ์
+$("plates").innerHTML = DEV.map((d) => {
+  const [rc, rt] = riskOf(d.res.tau), r = d.res;
+  const kpcCls = r.kpc == null ? "bad" : r.kpc <= 80 ? "good" : r.kpc <= 250 ? "warn" : "bad";
+  return `<article class="plate" id="${d.id}">
+    <div class="top"><h3>${d.name}</h3><span class="kind">${d.kind}</span></div>
+    <p class="lead">${d.lead}</p>
+    <div class="draw">${section(d)}</div>
+    <dl>
+      <dt>ตัวเรือ/ทุ่น (ยาว × กว้าง × กินน้ำ)</dt><dd>${d.hull[0]} × ${d.hull[1]} × ${d.hull[2]} ม.</dd>
+      <dt>${d.jet ? "หัวฉีด" : d.duct ? "ท่อพ่น" : "ใบพัด"}</dt><dd>${d.units} · Ø ${d.D < 0.1 ? (d.D * 1000).toFixed(0) + " มม." : d.D.toFixed(2) + " ม."}</dd>
+      <dt>ความลึกจากผิวน้ำ</dt><dd>${d.depth} ม.${d.tilt ? ` · กดลง ${d.tilt}°` : ""}</dd>
+      <dt>กำลังต่อชุด</dt><dd>${d.Pu} kW</dd>
+      <dt>แรงขับต่อชุด</dt><dd>${(d.T * d.Pu / d.P).toFixed(1)} kN</dd>
+      <dt>ความเร็วสายน้ำ</dt><dd>${d.v} ม./วิ</dd>
+      <dt>แรงขับต่อกำลัง</dt><dd>${d.tkw} N/kW</dd>
+    </dl>
+    <div class="res" aria-label="ผลการทดสอบ">
+      <div class="stat ${kpcCls}"><b>${r.kpc == null ? "ไม่ลด" : r.kpc}</b><span>kW ต่อลด 1 ซม.</span></div>
+      <div class="stat"><b>${sgn(r.d, 2)}</b><span>ระดับน้ำ ซม. (${r.P} kW)</span></div>
+      <div class="stat"><b>${sgn(r.dq, 1)}%</b><span>Q ถ้าวางทุก 1 กม.</span></div>
+      <div class="stat ${rc}"><b>${r.tau}</b><span>แรงเฉือนท้องน้ำ N/ม² · กัดเซาะ${rt}</span></div>
+    </div>
+    <div class="pc"><div class="plus"><h4>ข้อดี</h4><ul>${d.plus.map((x) => `<li>${x}</li>`).join("")}</ul></div>
+      <div class="minus"><h4>ข้อจำกัด</h4><ul>${d.minus.map((x) => `<li>${x}</li>`).join("")}</ul></div></div>
+    <p class="fit"><b>เหมาะกับ:</b> ${d.fit}</p>
+  </article>`;
+}).join("");
+
+// ตารางเทียบ
+(function () {
+  let h = `<thead><tr><th>อุปกรณ์</th><th>ขนาดตัวขับ</th><th>ความเร็วสายน้ำ ม./วิ</th><th>N/kW</th><th>kW ต่อลด 1 ซม.</th><th>Q เพิ่ม % (3 ชุด)</th><th>กัดเซาะ</th></tr></thead><tbody>`;
+  DEV.slice().sort((a, b) => (a.res.kpc ?? 1e9) - (b.res.kpc ?? 1e9)).forEach((d) => {
+    const [rc, rt] = riskOf(d.res.tau);
+    h += `<tr><td><a href="#${d.id}" style="color:inherit">${d.name}</a></td><td class="n">${d.units} Ø${d.D < 0.1 ? (d.D * 1000).toFixed(0) + "มม." : d.D.toFixed(2) + "ม."}</td>
+      <td class="n">${d.v}</td><td class="n">${d.tkw}</td><td class="n">${d.res.kpc ?? "ไม่ลด"}</td><td class="n">${sgn(d.res.dq, 1)}</td><td><span class="tag ${rc}">${rt}</span></td></tr>`;
+  });
+  $("cmp").innerHTML = h + "</tbody>";
+})();
+})();
+</script>

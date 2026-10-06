@@ -1,0 +1,298 @@
+<title>ผลทดสอบเรือดันน้ำ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column (~880px) of a hydraulics test report — findings first, then evidence per test; bar charts are plain HTML on one linear scale each. */
+:root {
+  --paper: #f3f6f5;        /* river-silt paper */
+  --sheet: #fbfcfc;
+  --ink: #15262b;
+  --muted: #5b6f74;
+  --rule: #d5dfdf;
+  --water: #1f7f8f;        /* accent: canal water */
+  --water-soft: #d6ebee;
+  --good: #2c8a5a; --warn: #b7791f; --bad: #c2405a;
+  --bar-base: #b8c7c9;
+  --font-display: "Bai Jamjuree", "IBM Plex Sans Thai", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Thai", "Leelawadee UI", Tahoma, system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0d1719; --sheet: #121f22; --ink: #dce7e8; --muted: #8ea4a8; --rule: #24373b;
+  --water: #5cc3d2; --water-soft: #173238; --good: #5cc28b; --warn: #e0a84a; --bad: #ef7a90; --bar-base: #3b5257;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --paper: #0d1719; --sheet: #121f22; --ink: #dce7e8; --muted: #8ea4a8; --rule: #24373b;
+  --water: #5cc3d2; --water-soft: #173238; --good: #5cc28b; --warn: #e0a84a; --bad: #ef7a90; --bar-base: #3b5257;
+  color-scheme: dark; }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.65; }
+.wrap { max-width: 880px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 64px; display: flex; flex-direction: column; gap: 44px; }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; line-height: 1.25; margin: 0; text-wrap: balance; }
+h1 { font-size: clamp(28px, 5vw, 38px); }
+h2 { font-size: 22px; }
+h3 { font-size: 17px; }
+p { margin: 0; max-width: 68ch; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--water); font-weight: 600; }
+.muted { color: var(--muted); }
+.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+section { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.head { display: flex; flex-direction: column; gap: 12px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 13px; color: var(--muted); }
+.meta b { color: var(--ink); font-weight: 500; }
+.status { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill { font-size: 12px; border-radius: 999px; padding: 2px 10px; border: 1px solid var(--rule); background: var(--sheet); white-space: nowrap; }
+.pill.done { border-color: var(--good); color: var(--good); }
+.pill.run { border-color: var(--warn); color: var(--warn); }
+
+.findings { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; counter-reset: f; }
+.findings li { background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: 14px 16px; display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; }
+.findings .big { grid-row: span 2; font-family: var(--font-data); font-size: 22px; font-weight: 500; color: var(--water); min-width: 4.6em; line-height: 1.2; }
+.findings .big small { display: block; font-size: 11px; color: var(--muted); font-family: var(--font-body); font-weight: 400; }
+.findings b { font-weight: 600; }
+
+.bars { display: flex; flex-direction: column; gap: 9px; }
+.bar { display: grid; grid-template-columns: minmax(0, 13em) 1fr minmax(0, 9.5em); gap: 10px; align-items: center; font-size: 13.5px; }
+.bar .lab { min-width: 0; }
+.bar .track { position: relative; height: 14px; background: var(--water-soft); border-radius: 2px; }
+.bar .fill { position: absolute; left: 0; top: 0; bottom: 0; background: var(--water); border-radius: 2px; }
+.bar .fill.neg { background: var(--bad); }
+.bar .cap { position: absolute; top: -3px; bottom: -3px; border-left: 1.5px dashed var(--ink); opacity: .5; }
+.bar .val { font-family: var(--font-data); font-variant-numeric: tabular-nums; font-size: 12.5px; text-align: right; }
+.axis { display: grid; grid-template-columns: minmax(0, 13em) 1fr minmax(0, 9.5em); gap: 10px; font-size: 11px; color: var(--muted); }
+.axis .ticks { display: flex; justify-content: space-between; font-family: var(--font-data); }
+
+.tbl { overflow-x: auto; border: 1px solid var(--rule); border-radius: 8px; background: var(--sheet); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; min-width: 640px; }
+th, td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; white-space: normal; }
+thead th { font-weight: 500; color: var(--muted); font-size: 12px; vertical-align: bottom; line-height: 1.35; white-space: normal; }
+tbody tr:last-child td { border-bottom: 0; }
+td.n { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+td.best { color: var(--water); font-weight: 500; }
+.risk { font-size: 11.5px; border-radius: 4px; padding: 1px 7px; font-family: var(--font-body); }
+.risk.ok { background: color-mix(in srgb, var(--good) 16%, transparent); color: var(--good); }
+.risk.warn { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+.risk.bad { background: color-mix(in srgb, var(--bad) 16%, transparent); color: var(--bad); }
+
+.test { border-top: 1px solid var(--rule); padding-top: 22px; }
+.test .q { color: var(--muted); }
+.note { font-size: 13px; color: var(--muted); }
+.pending { background: var(--sheet); border: 1px dashed var(--rule); border-radius: 8px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+.links { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px; }
+.links a, .links div { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border: 1px solid var(--rule); border-radius: 8px; background: var(--sheet); color: var(--ink); text-decoration: none; }
+.links a:hover { border-color: var(--water); }
+.links a:focus-visible { outline: 2px solid var(--water); outline-offset: 2px; }
+.links b { font-weight: 600; color: var(--water); }
+.links span { font-size: 12.5px; color: var(--muted); }
+ul.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; max-width: 72ch; }
+
+@media (max-width: 560px) {
+  .bar, .axis { grid-template-columns: minmax(0, 1fr) minmax(0, 7em); }
+  .bar .track, .axis .ticks { grid-column: 1 / -1; grid-row: 2; }
+  .axis span:first-child { display: none; }
+  .findings li { grid-template-columns: 1fr; }
+  .findings .big { grid-row: auto; }
+}
+</style>
+
+<div class="wrap">
+  <header class="head">
+    <span class="eyebrow">แบบจำลองการไหล 3 มิติ · LBM D3Q19 + LES บน GPU</span>
+    <h1>ผลทดสอบเรือดันน้ำ</h1>
+    <p>เปรียบเทียบเรือและอุปกรณ์ดันน้ำแบบต่าง ๆ ที่จอดเรียงขวางลำน้ำ ว่าลดระดับน้ำและเร่งการไหลได้เท่าไรต่อกำลังเครื่อง และเสี่ยงกัดเซาะท้องน้ำแค่ไหน</p>
+    <div class="meta">
+      <span>ลำน้ำ <b>กว้าง ~62 ม. ลึก 3 ม.</b></span>
+      <span>Q ปกติ <b class="num">128.9 ม³/วิ</b></span>
+      <span>ความเร็วเฉลี่ย <b class="num">0.77 ม./วิ</b></span>
+      <span>ช่วงจำลอง <b class="num">150 ม.</b> (~2 ล้านเซลล์)</span>
+      <span>อัปเดต <b>5 ต.ค. 2569</b></span>
+    </div>
+    <div class="status" aria-label="สถานะการทดสอบ">
+      <span class="pill done">1 ชนิดเรือ ✓</span>
+      <span class="pill done">2 จำนวนเรือ ✓</span>
+      <span class="pill run">3 ระดับน้ำ · กำลังรัน</span>
+      <span class="pill run">4 มุมใบพัด · กำลังรัน</span>
+      <span class="pill run">5 การจัดแถว · กำลังรัน</span>
+      <span class="pill done">6 หัวฉีด/ม่านน้ำ ✓</span>
+      <span class="pill run">คลองประเวศ 1 กม. · กำลังรัน</span>
+    </div>
+  </header>
+
+  <section aria-labelledby="h-find">
+    <h2 id="h-find">สรุปผลหลัก</h2>
+    <ol class="findings">
+      <li><span class="big">45<small>kW ต่อลด 1 ซม.</small></span><b>ม่านน้ำความเร็วต่ำคุ้มค่าที่สุด</b><span>ลดระดับน้ำ 6.7 ซม. ด้วย 300 kW และเพิ่ม Q ได้ 16.6% ถ้าวางทุก 1 กม. ดีกว่าใบพัดใหญ่ที่กำลังเท่ากัน 1.7 เท่า ทุ่นใบพัดใหญ่กำลังต่ำ (51 kW/ซม.) ตามมาติด ๆ</span></li>
+      <li><span class="big">×4–8<small>ส่วนต่างความคุ้มค่า</small></span><b>ขยับน้ำมากด้วยความเร็วต่ำ ดีกว่าฉีดแรง</b><span>แรงขับต่อกำลังของใบพัดเพิ่มตามขนาดใบพัด ส่วนหัวฉีดได้ T = 2ηP/v ยิ่งฉีดเร็วยิ่งได้แรงน้อย เรือหางยาวและ outboard ใช้ 240–400 kW ต่อการลด 1 ซม.</span></li>
+      <li><span class="big">+0.05<small>ซม. (สูงขึ้น)</small></span><b>หัวฉีดแรงดันสูง 100 บาร์ไม่ได้ผล</b><span>แรงขับ 3 kN น้อยกว่าแรงต้านของทุ่นเอง ระดับน้ำกลับสูงขึ้น สายน้ำหายไปใน 8 ม. ฉีดกระจาย ±30° ยิ่งแย่ลง</span></li>
+      <li><span class="big">−9.4<small>ซม. ที่ 1800 kW</small></span><b>เรือลากจูงได้ผลรวมมากที่สุด แต่เสี่ยงกัดเซาะสูงมาก</b><span>เพิ่ม Q ได้ 21.5% แต่แรงเฉือนท้องน้ำสูงสุด 607 N/ม² (ปกติ 3.9) เพราะใบพัด 1.2 ม. อยู่ใกล้ท้องน้ำในน้ำลึก 3 ม.</span></li>
+      <li><span class="big">394→191<small>kW/ซม. เมื่อ 1→3 ลำ</small></span><b>วางเรือหลายลำเรียงขวางคุ้มขึ้น</b><span>เรือลำเดียวยังแพ้แรงต้านตัวเรือ (ผิวน้ำท้ายเรือช้าลง 11%) เมื่อเพิ่มเป็น 3 ลำ สายน้ำรวมกันจนการลดระดับน้ำต่อกำลังดีขึ้น 2 เท่า แถวที่สองตามหลังได้ผลต่อกำลังลดลงเล็กน้อย</span></li>
+    </ol>
+  </section>
+
+  <section aria-labelledby="h-rank">
+    <h2 id="h-rank">อันดับความคุ้มค่า ทุกอุปกรณ์</h2>
+    <p class="muted">การลดระดับน้ำด้านเหนือกลุ่มเรือ ต่อกำลังเครื่อง 100 kW (ยิ่งยาวยิ่งคุ้ม) — ทุกกรณีเป็นกลุ่ม 3 ชุดเรียงขวางลำน้ำ</p>
+    <div class="bars" id="rank"></div>
+    <div class="axis" id="rank-axis"></div>
+    <div class="tbl"><table id="rank-tbl"></table></div>
+    <p class="note">ความเสี่ยงกัดเซาะ = แรงเฉือนท้องน้ำสูงสุดเทียบกับไม่มีเรือ (3.9 N/ม²): ต่ำ ≤ 3 เท่า, ปานกลาง ≤ 10 เท่า, สูง > 10 เท่า</p>
+  </section>
+
+  <section aria-labelledby="h-q">
+    <h2 id="h-q">ปริมาณน้ำที่เพิ่มขึ้น</h2>
+    <p class="muted">ถ้าวางกลุ่มอุปกรณ์แบบเดียวกันซ้ำทุก 1 กม. ตลอดลำน้ำ (Q ปกติ 128.9 ม³/วิ) ประมาณจากแรงสุทธิที่น้ำได้รับจริงด้วยสมดุลโมเมนตัม Q′/Q = √(1 + F/ρgALS) — เส้นประ = ขอบเขตบนถ้าแรงขับทั้งหมดถึงน้ำ</p>
+    <div class="bars" id="qbars"></div>
+    <div class="axis" id="q-axis"></div>
+  </section>
+
+  <section aria-labelledby="h-tests">
+    <h2 id="h-tests">ผลแต่ละการทดสอบ</h2>
+
+    <div class="test">
+      <h3>1) ชนิดเรือ</h3>
+      <p class="q">เรือ 4 ชนิด ชนิดละ 3 ลำ ที่ระดับน้ำเดียวกัน ใช้กำลังเครื่องตามสเปกของแต่ละชนิด</p>
+      <div class="tbl"><table id="t1"></table></div>
+      <p class="note">ทุ่นใบพัด 1.6 ม. ได้แรงขับ 364 N/kW เทียบกับใบพัดเล็กหมุนเร็วของเรือหางยาว/outboard ~88 N/kW</p>
+    </div>
+
+    <div class="test">
+      <h3>2) จำนวนเรือ</h3>
+      <p class="q">เพิ่มเรือลากจูงจาก 1 ลำ เป็น 2, 3 และ 2 แถว × 3 ลำ</p>
+      <div class="tbl"><table id="t2"></table></div>
+      <p class="note">ΔQ ต่อกำลังใกล้เคียงกันราว 1.0–1.2% ต่อ 100 kW ไม่ว่าจะกี่ลำ แต่การลดระดับน้ำด้านเหนือดีขึ้นมากเมื่อเรือเรียงขวางเต็มลำน้ำ น่าจะเพราะน้ำไหลอ้อมกลุ่มเรือได้น้อยลง</p>
+    </div>
+
+    <div class="test">
+      <h3>6) หัวฉีดน้ำ / ม่านน้ำ เทียบใบพัด ที่กำลังรวม 300 kW เท่ากัน</h3>
+      <p class="q">สิ่งที่ดันน้ำคือโมเมนตัม (มวล × ความเร็ว) ไม่ใช่แรงดัน</p>
+      <div class="tbl"><table id="t6"></table></div>
+    </div>
+
+    <div class="test">
+      <h3>3) ระดับน้ำ · 4) มุมใบพัด · 5) การจัดแถว</h3>
+      <div class="pending">
+        <b>กำลังรันทีละการทดสอบ (GPU 30%)</b>
+        <span class="note">3) เรือหางยาว 4 ลำที่น้ำต่ำ/กลาง/สูง · 4) มุมเพลาใบพัด 0°, 12°, 25° · 5) เรือหางยาว 6 ลำ จัดเป็น 1×6, 2×3, 3×2 — จะเพิ่มผลในหน้านี้เมื่อเสร็จ</span>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-3d">
+    <h2 id="h-3d">ภาพเคลื่อนไหว 3 มิติ</h2>
+    <div class="links">
+      <a href="https://claude.ai/artifact/Vf9PB4iDFeDjsLaFNwfxej" target="_blank" rel="noopener"><b>เทียบเรือดันน้ำทุกแบบ</b><span>8 อุปกรณ์ + ไม่มีเรือ ในหน้าเดียว</span></a>
+      <a href="https://claude.ai/artifact/ANtNr7iZx6SH1rFP1KxjF4" target="_blank" rel="noopener"><b>ม่านน้ำเทียบใบพัดใหญ่</b><span>300 kW เท่ากัน</span></a>
+      <a href="https://claude.ai/artifact/JE1Jv9MbfgKN2gUZhTfXmz" target="_blank" rel="noopener"><b>เรือลากจูง 3 มิติ</b><span>สายน้ำและแรงเฉือนท้องน้ำ</span></a>
+      <div><b>คลองประเวศบุรีรมย์ 1 กม.</b><span>กำลังจำลอง — กว้าง 40 ม. ลึก 4 ม. น้ำไหล 0.3 ม./วิ</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="h-method">
+    <h2 id="h-method">วิธีจำลองและข้อจำกัด</h2>
+    <ul class="plain">
+      <li>Lattice Boltzmann D3Q19 (regularized BGK) + LES Smagorinsky บน GPU, แรงขับใบพัดแบบ Guo forcing</li>
+      <li>ใบพัดเป็น actuator disk: T = (2ρA(ηP)²)^⅓ · หัวฉีด/ม่านน้ำ: v = √(2Δp/ρ), T = 2ηP/v (η = 0.6–0.7)</li>
+      <li>ท้องน้ำ/ตลิ่งมีแรงเสียดทานตามแมนนิ่ง (wall model), ตัวเรือตามกฎลอการิทึม, ผิวน้ำแบบ rigid lid (Froude ต่ำ)</li>
+      <li>ระดับน้ำคำนวณจากความดันใต้ผิวน้ำ เฉลี่ยเวลาช่วงท้าย 40% ของการจำลอง</li>
+      <li>ΔQ ระยะไกลใช้สมดุลโมเมนตัม จากแรงสุทธิที่หักแรงต้านตัวเรือและแรงเสียดทานที่เพิ่มขึ้นแล้ว</li>
+    </ul>
+    <p class="note">สเปกเรือเป็นค่าประมาณ ช่วงจำลองสั้น และไม่จำลองคลื่นผิวน้ำหรือการหมุนวนหลังใบพัด ผลจึงเหมาะกับการเปรียบเทียบแบบอุปกรณ์มากกว่าการทำนายค่าจริง ควรใส่ข้อมูลจริงของเรือและสอบเทียบกับการวัดก่อนใช้ตัดสินใจ</p>
+  </section>
+</div>
+
+<script>
+(function () {
+"use strict";
+// ผลจาก results/wallmodel/test*/boat_results.csv
+const T1 = [
+  { label: "เรือหางยาว ×3", P: 225, T: 19.77, TkW: 87.9, F: 15.59, d: -0.94, kpc: 240, us: 3.3, tau: 9.59, dq: 2.11, dqT: 2.66 },
+  { label: "เรือ outboard ×3", P: 330, T: 28.82, TkW: 87.3, F: 10.54, d: -0.81, kpc: 406, us: -1.0, tau: 9.53, dq: 1.43, dqT: 3.86 },
+  { label: "เรือลากจูง ×3", P: 1800, T: 251.09, TkW: 139.5, F: 174.77, d: -9.42, kpc: 191, us: 8.3, tau: 606.8, dq: 21.54, dqT: 29.83 },
+  { label: "ทุ่นผลักดันน้ำ ×3", P: 90, T: 32.77, TkW: 364.1, F: 28.58, d: -1.76, kpc: 51, us: 2.2, tau: 5.36, dq: 3.83, dqT: 4.38 }];
+const T2 = [
+  { label: "เรือลากจูง ×1", P: 600, T: 83.7, F: 52.57, d: -1.52, kpc: 394, us: -10.7, tau: 603.3, dq: 6.94, dqT: 10.84 },
+  { label: "เรือลากจูง ×2", P: 1200, T: 167.39, F: 110.36, d: -4.68, kpc: 257, us: -0.5, tau: 589.1, dq: 14.08, dqT: 20.71 },
+  { label: "เรือลากจูง ×3", P: 1800, T: 251.09, F: 174.77, d: -9.42, kpc: 191, us: 8.3, tau: 606.8, dq: 21.54, dqT: 29.83 },
+  { label: "เรือลากจูง 2 แถว × 3", P: 3600, T: 502.18, F: 308.17, d: -17.47, kpc: 206, us: 24.5, tau: 677.3, dq: 35.70, dqT: 53.99 }];
+const T6 = [
+  { label: "ใบพัดใหญ่ 100 kW ×3", P: 300, T: 73.11, TkW: 243.7, F: 67.62, d: -3.83, kpc: 78, us: 13.0, reach: 103, tau: 11.97, dq: 8.84, dqT: 9.53 },
+  { label: "ฉีด 100 บาร์ ตรง ×3", P: 300, T: 2.97, TkW: 9.9, F: -1.29, d: 0.05, kpc: null, us: -2.8, reach: 8, tau: 4.62, dq: -0.18, dqT: 0.40 },
+  { label: "ฉีด 100 บาร์ กระจาย ±30° ×3", P: 300, T: 2.97, TkW: 9.9, F: -1.77, d: 0.07, kpc: null, us: -3.4, reach: 7, tau: 4.37, dq: -0.24, dqT: 0.40 },
+  { label: "ฉีด 10 บาร์ ×3", P: 300, T: 9.39, TkW: 31.3, F: 5.16, d: -0.31, kpc: 967, us: 0.8, reach: 104, tau: 5.41, dq: 0.70, dqT: 1.27 },
+  { label: "ม่านน้ำ 3 ม./วิ ×3", P: 300, T: 140.0, TkW: 466.7, F: 131.39, d: -6.72, kpc: 45, us: 18.3, reach: 104, tau: 22.46, dq: 16.57, dqT: 17.57 }];
+const Q0 = 128.89, TAU0 = 3.89;
+const ALL = [...T1, ...T6.filter((r) => !r.label.includes("กระจาย"))];
+const $ = (id) => document.getElementById(id);
+const f = (v, dp) => (v == null ? "–" : (v > 0 && dp >= 0 && v < 0 ? "" : "") + v.toFixed(dp));
+const sgn = (v, dp) => (v == null ? "–" : (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(dp));
+function risk(tau) {
+  const r = tau / TAU0;
+  const [cls, txt] = r <= 3 ? ["ok", "ต่ำ"] : r <= 10 ? ["warn", "ปานกลาง"] : ["bad", "สูง"];
+  return `<span class="risk ${cls}">${txt} ×${r < 10 ? r.toFixed(1) : Math.round(r)}</span>`;
+}
+function ticks(max, n, unit) {
+  const step = niceStep(max / n); const out = [];
+  for (let v = 0; ; v += step) { out.push(v); if (v >= max - 1e-9) break; }   // ขีดสุดท้าย ≥ ค่าสูงสุดเสมอ
+  return out;
+}
+function niceStep(x) { const p = Math.pow(10, Math.floor(Math.log10(x))); return [1, 2, 2.5, 5, 10].map((m) => m * p).find((s) => s >= x); }
+function axis(el, max, unit) {
+  const t = ticks(max, 4); const top = t[t.length - 1];
+  el.innerHTML = `<span></span><div class="ticks">${t.map((v) => `<span>${+v.toFixed(2)}</span>`).join("")}</div><span>${unit}</span>`;
+  return top;
+}
+
+// อันดับความคุ้มค่า: ลดระดับน้ำ ซม. ต่อ 100 kW
+const rank = ALL.map((r) => ({ ...r, eff: -r.d / (r.P / 100) })).sort((a, b) => b.eff - a.eff);
+const effTop = axis($("rank-axis"), Math.max(...rank.map((r) => r.eff)), "ซม./100 kW");
+$("rank").innerHTML = rank.map((r) => {
+  const w = Math.max(0, r.eff) / effTop * 100;
+  const neg = r.eff < 0;
+  return `<div class="bar"><span class="lab">${r.label}</span><div class="track" role="img" aria-label="${r.label} ${r.eff.toFixed(2)} ซม. ต่อ 100 kW">
+    <div class="fill${neg ? " neg" : ""}" style="width:${neg ? 1.2 : w}%"></div></div>
+    <span class="val">${neg ? "น้ำสูงขึ้น" : r.eff.toFixed(2) + " ซม."}</span></div>`;
+}).join("");
+(function () {
+  const best = (k, mode) => { const v = rank.map((r) => r[k]).filter((x) => x != null); return mode === "max" ? Math.max(...v) : Math.min(...v); };
+  const bk = { kpc: best("kpc", "min"), TkW: best("TkW", "max"), dqp: Math.max(...rank.map((r) => r.dq / (r.P / 100))) };
+  let h = `<thead><tr><th>อุปกรณ์ (3 ชุด)</th><th>กำลังรวม kW</th><th>แรงขับ kN</th><th>N/kW</th><th>ระดับน้ำ ซม.</th><th>kW ต่อลด 1 ซม.</th><th>Q เพิ่ม %</th><th>Q เพิ่ม % ต่อ 100 kW</th><th>ความเสี่ยงกัดเซาะ</th></tr></thead><tbody>`;
+  rank.forEach((r) => {
+    const dqp = r.dq / (r.P / 100);
+    h += `<tr><td>${r.label}</td><td class="n">${r.P}</td><td class="n">${r.T.toFixed(1)}</td><td class="n ${r.TkW === bk.TkW ? "best" : ""}">${r.TkW.toFixed(0)}</td>
+      <td class="n">${sgn(r.d, 2)}</td><td class="n ${r.kpc === bk.kpc ? "best" : ""}">${r.kpc == null ? "ไม่ลด" : r.kpc}</td>
+      <td class="n">${sgn(r.dq, 1)}</td><td class="n ${dqp === bk.dqp ? "best" : ""}">${sgn(dqp, 2)}</td><td>${risk(r.tau)}</td></tr>`;
+  });
+  $("rank-tbl").innerHTML = h + "</tbody>";
+})();
+
+// ปริมาณน้ำ: ม³/วิ ที่เพิ่ม (วางทุก 1 กม.)
+const qs = ALL.map((r) => ({ ...r, add: Q0 * r.dq / 100, cap: Q0 * r.dqT / 100 })).sort((a, b) => b.add - a.add);
+const qTop = axis($("q-axis"), Math.max(...qs.map((r) => r.cap)), "ม³/วิ");
+$("qbars").innerHTML = qs.map((r) => {
+  const neg = r.add < 0;
+  return `<div class="bar"><span class="lab">${r.label} <span class="muted num">${r.P} kW</span></span>
+    <div class="track" role="img" aria-label="${r.label} เพิ่ม ${r.add.toFixed(1)} ลูกบาศก์เมตรต่อวินาที">
+      <div class="fill${neg ? " neg" : ""}" style="width:${neg ? 1.2 : Math.max(r.add, 0) / qTop * 100}%"></div>
+      <div class="cap" style="left:${r.cap / qTop * 100}%"></div></div>
+    <span class="val">${sgn(r.add, 1)} (${sgn(r.dq, 1)}%)</span></div>`;
+}).join("");
+
+// ตารางรายการทดสอบ
+function table(el, rows, cols) {
+  let h = "<thead><tr><th>กรณี</th>" + cols.map((c) => `<th>${c[0]}</th>`).join("") + "</tr></thead><tbody>";
+  rows.forEach((r) => { h += `<tr><td>${r.label}</td>` + cols.map((c) => `<td class="${c[3] ? "" : "n"}">${c[2](r)}</td>`).join("") + "</tr>"; });
+  el.innerHTML = h + "</tbody>";
+}
+const C = {
+  P: ["kW", 0, (r) => r.P], T: ["แรงขับ kN", 0, (r) => r.T.toFixed(1)], TkW: ["N/kW", 0, (r) => r.TkW.toFixed(0)],
+  F: ["แรงสุทธิ kN", 0, (r) => r.F.toFixed(1)], d: ["ระดับน้ำ ซม.", 0, (r) => sgn(r.d, 2)],
+  kpc: ["kW/ซม.", 0, (r) => (r.kpc == null ? "ไม่ลด" : r.kpc)], us: ["ผิวน้ำท้ายเรือ %", 0, (r) => sgn(r.us, 1)],
+  reach: ["สายน้ำไปได้ ม.", 0, (r) => (r.reach >= 100 ? "> 100" : r.reach)],
+  dq: ["Q เพิ่ม %", 0, (r) => sgn(r.dq, 1)], tau: ["กัดเซาะ", 0, (r) => risk(r.tau), true]};
+table($("t1"), T1, [C.P, C.T, C.TkW, C.d, C.kpc, C.us, C.dq, C.tau]);
+table($("t2"), T2, [C.P, C.T, C.F, C.d, C.kpc, C.us, C.dq, C.tau]);
+table($("t6"), T6, [C.T, C.TkW, C.F, C.d, C.kpc, C.reach, C.dq, C.tau]);
+})();
+</script>

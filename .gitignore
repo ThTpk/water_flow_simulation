@@ -2,8 +2,7 @@
 __pycache__/
 *.pyc
 
-# Generated simulation outputs (images, CSV, VTK, large HTML viewers)
-results/
+# Large raw field dumps (results/ itself is committed: figures, CSV, web pages, cache)
 *.vtk
 
 # Local tool settings
