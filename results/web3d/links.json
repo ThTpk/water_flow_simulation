@@ -6,6 +6,12 @@
   "local": "../report/boat_test_summary.html"
  },
  {
+  "label": "รายงานผลทดสอบ 6 แบบ",
+  "note": "ตาราง ภาพการไหล และข้อจำกัด",
+  "href": "https://claude.ai/artifact/7Wuk61dfMR9QGRk3PthfoY",
+  "local": "../report/boat_push_report.html"
+ },
+ {
   "label": "รู้จักอุปกรณ์ดันน้ำ",
   "note": "หลักการและแผ่นข้อมูล 8 แบบ",
   "href": "https://claude.ai/artifact/BYHNRDJQbgMDRPGiZYQUtU",

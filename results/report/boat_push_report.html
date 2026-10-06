@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ผลทดสอบเรือดันน้ำ 3 มิติ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single reading column (~72ch) with wide figure/table blocks; findings first, per-test detail after */
+:root {
+  --bg: #f3f7f8;
+  --panel: #ffffff;
+  --fg: #12232b;
+  --muted: #586c74;
+  --line: #d3dfe2;
+  --accent: #0d6d8a;      /* river channel blue */
+  --accent-soft: #e1eff3;
+  --warn: #a95c14;        /* sediment / scour */
+  --warn-soft: #f6eadc;
+  --good: #2b7a4b;
+  --good-soft: #e2f1e8;
+  --bar: #0d6d8a;
+  --bar-dim: #9fb9c1;
+  --font-display: "Chakra Petch", "IBM Plex Sans Thai", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Thai", "Noto Sans Thai", "Leelawadee UI", Tahoma, system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0c181d; --panel: #12232a; --fg: #e2edf0; --muted: #93a9b1; --line: #253a42;
+    --accent: #56b6d3; --accent-soft: #15323c; --warn: #e3a062; --warn-soft: #33261a;
+    --good: #66c28c; --good-soft: #17301f; --bar: #56b6d3; --bar-dim: #3d5962; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0c181d; --panel: #12232a; --fg: #e2edf0; --muted: #93a9b1; --line: #253a42;
+  --accent: #56b6d3; --accent-soft: #15323c; --warn: #e3a062; --warn-soft: #33261a;
+  --good: #66c28c; --good-soft: #17301f; --bar: #56b6d3; --bar-dim: #3d5962; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 16px; line-height: 1.75;
+}
+.wrap { max-width: 1040px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 72px; display: grid; gap: 56px; }
+.prose { max-width: 72ch; }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; line-height: 1.3; margin: 0; }
+h1 { font-size: clamp(30px, 5vw, 44px); font-weight: 700; letter-spacing: 0.01em; }
+h2 { font-size: 26px; font-weight: 600; }
+h3 { font-size: 19px; font-weight: 600; }
+p { margin: 0; }
+.eyebrow { font-family: var(--font-data); font-size: 12.5px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.muted { color: var(--muted); }
+section { display: grid; gap: 18px; min-width: 0; }
+header { display: grid; gap: 16px; border-bottom: 2px solid var(--accent); padding-bottom: 28px; }
+.setup { display: flex; flex-wrap: wrap; gap: 8px 28px; font-family: var(--font-data); font-size: 13.5px; color: var(--muted); }
+.setup b { color: var(--fg); font-weight: 500; }
+
+/* findings */
+.findings { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.findings li { display: grid; grid-template-columns: 9.5em 1fr; gap: 4px 18px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+.findings li:last-child { border-bottom: 0; }
+.findings .k { font-family: var(--font-display); font-weight: 600; color: var(--accent); }
+@media (max-width: 640px) { .findings li { grid-template-columns: 1fr; } }
+
+/* chart */
+.chart { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 18px 16px 10px; overflow-x: auto; }
+.chart svg { display: block; width: 100%; min-width: 560px; height: auto; }
+.chart text { font-family: var(--font-body); fill: var(--fg); }
+.chart .tick { font-family: var(--font-data); fill: var(--muted); font-size: 11px; }
+.chart .val { font-family: var(--font-data); font-size: 12px; }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.chart .b { fill: var(--bar); }
+.chart .b.dim { fill: var(--bar-dim); }
+.note { font-size: 13.5px; color: var(--muted); }
+
+/* tables */
+.tbl { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; }
+th, td { padding: 9px 12px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; }
+thead th { font-weight: 600; font-size: 13px; color: var(--muted); background: var(--accent-soft); vertical-align: bottom; white-space: normal; }
+tbody tr:last-child td { border-bottom: 0; }
+td.num, td { font-variant-numeric: tabular-nums; }
+td .u { color: var(--muted); font-size: 12px; }
+tr.best td { background: var(--good-soft); }
+tr.best td:first-child { font-weight: 600; }
+.risk { color: var(--warn); font-weight: 600; }
+
+/* callouts */
+.verdict { background: var(--good-soft); border-left: 4px solid var(--good); padding: 12px 16px; border-radius: 0 6px 6px 0; }
+.caution { background: var(--warn-soft); border-left: 4px solid var(--warn); padding: 12px 16px; border-radius: 0 6px 6px 0; }
+.verdict b, .caution b { font-family: var(--font-display); }
+
+figure { margin: 0; display: grid; gap: 8px; min-width: 0; }
+figure img { width: 100%; height: auto; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
+figcaption { font-size: 13.5px; color: var(--muted); }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 760px) { .pair { grid-template-columns: 1fr; } }
+
+.test { border-top: 1px solid var(--line); padding-top: 34px; }
+.test h2 { display: flex; gap: 14px; align-items: baseline; flex-wrap: wrap; }
+.test h2 .no { font-family: var(--font-data); font-size: 15px; color: var(--accent); font-weight: 500; }
+ul.plain { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+details { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 10px 16px; }
+summary { cursor: pointer; font-weight: 600; }
+summary:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+a { color: var(--accent); }
+code { font-family: var(--font-data); font-size: 0.9em; }
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+
+<header>
+  <span class="eyebrow">Flood Sim · แบบจำลอง 3 มิติ · 6 ต.ค. 2026</span>
+  <h1>ผลทดสอบเรือดันน้ำ 3 มิติ</h1>
+  <p class="prose">ผลจำลองการไหล 3 มิติของช่วงลำน้ำยาว 150 ม. เมื่อมีเรือดันน้ำและอุปกรณ์อื่นทำงานอยู่ เทียบกับกรณีไม่มีเรือ
+  ทั้งหมด 6 การทดสอบ: ชนิดเรือ, จำนวนเรือ, ระดับน้ำ, มุมใบพัด, การจัดแถว และเครื่องฉีดน้ำ/ม่านน้ำ</p>
+  <div class="setup">
+    <span>ความลึกน้ำ <b>3 ม.</b></span>
+    <span>อัตราการไหล <b>129 ม³/วิ</b></span>
+    <span>ความเร็วเฉลี่ย <b>0.77 ม./วิ</b></span>
+    <span>กว้าง <b>~60 ม.</b> ตลิ่งลาด 1:2</span>
+    <span>Manning <b>n = 0.03</b></span>
+    <span>แบบจำลอง <b>LBM D3Q19 + LES + wall model</b></span>
+  </div>
+</header>
+
+<section>
+  <h2>ข้อสรุปหลัก</h2>
+  <ul class="findings">
+    <li><span class="k">คุ้มค่าที่สุด</span><span>ใบพัดใหญ่หมุนช้า (ทุ่นผลักดันน้ำ) และม่านน้ำความเร็วต่ำ ใช้กำลังเพียง 45–51 kW ต่อการลดระดับน้ำ 1 ซม. ดีกว่าเรือหางยาวและเรือ outboard 5–8 เท่า</span></li>
+    <li><span class="k">ฉีดแรงดันสูงไม่ได้ผล</span><span>หัวฉีด 100 บาร์ได้แรงดันน้ำเพียง 10 N ต่อ kW น้อยกว่าแรงต้านของทุ่นที่ติดตั้ง ระดับน้ำกลับสูงขึ้นเล็กน้อย การฉีดกระจายยิ่งได้แรงไปข้างหน้าน้อยลง</span></li>
+    <li><span class="k">เรือลากจูง</span><span>ลดระดับน้ำได้มากที่สุดต่อกลุ่ม (−9.4 ซม. จาก 3 ลำ) แต่ใบพัดอยู่ใกล้ท้องน้ำ สายน้ำวิ่งเลียท้องน้ำ แรงเฉือนสูงถึง ~600 N/ม² เสี่ยงกัดเซาะหนัก</span></li>
+    <li><span class="k">น้ำหลากล้นตลิ่ง</span><span>ที่ระดับน้ำ 5 ม. (ล้นตลิ่ง) ผลของเรือวัดไม่ได้ เพราะโมเมนตัมของแม่น้ำมากกว่าแรงดันของเรือหลายสิบเท่า ช่วงนั้นควรใช้มาตรการเพิ่มความสามารถระบายน้ำแทน</span></li>
+    <li><span class="k">วิธีใช้งาน</span><span>วางใบพัดแนวนอน (มุมกดไม่เกิน 12°) และเรียงเรือขวางลำน้ำแถวเดียว ได้แรงสุทธิมากกว่าการเรียงหลายแถวประมาณ 30%</span></li>
+    <li><span class="k">ขนาดของผล</span><span>กลุ่มเรือหนึ่งกลุ่มลดระดับน้ำเฉพาะที่ได้ไม่กี่เซนติเมตร การเพิ่มอัตราการไหลของทั้งแม่น้ำอย่างมีนัยต้องวางกลุ่มเรือซ้ำทุก ~1 กม. ตลอดลำน้ำ</span></li>
+  </ul>
+</section>
+
+<section>
+  <h2>ลดระดับน้ำได้ต่อกำลังเครื่อง</h2>
+  <p class="prose muted">เซนติเมตรที่ระดับน้ำด้านเหนือกลุ่มเรือลดลง ต่อกำลัง 100 kW (ยิ่งยาวยิ่งคุ้ม) — รวมผลจากการทดสอบ 1 และ 6</p>
+  <div class="chart" role="img" aria-label="แผนภูมิแท่ง ลดระดับน้ำได้ ซม. ต่อ 100 kW: ม่านน้ำ 2.24, ทุ่นผลักดันน้ำ 1.96, ใบพัดใหญ่ 1.28, เรือลากจูง 0.52, เรือหางยาว 0.42, เรือ outboard 0.25, หัวฉีด 10 บาร์ 0.10, หัวฉีด 100 บาร์ ไม่ลดระดับน้ำ">
+    <svg viewBox="0 0 660 370" xmlns="http://www.w3.org/2000/svg">
+      <!-- scale: x = 220 + v * 160  (v in cm per 100 kW, 0..2.5 -> 220..620) -->
+      <g>
+        <line class="grid" x1="220" y1="10" x2="220" y2="330"/>
+        <line class="grid" x1="300" y1="10" x2="300" y2="330"/>
+        <line class="grid" x1="380" y1="10" x2="380" y2="330"/>
+        <line class="grid" x1="460" y1="10" x2="460" y2="330"/>
+        <line class="grid" x1="540" y1="10" x2="540" y2="330"/>
+        <line class="grid" x1="620" y1="10" x2="620" y2="330"/>
+        <text class="tick" x="220" y="350" text-anchor="middle">0</text>
+        <text class="tick" x="300" y="350" text-anchor="middle">0.5</text>
+        <text class="tick" x="380" y="350" text-anchor="middle">1.0</text>
+        <text class="tick" x="460" y="350" text-anchor="middle">1.5</text>
+        <text class="tick" x="540" y="350" text-anchor="middle">2.0</text>
+        <text class="tick" x="620" y="350" text-anchor="middle">2.5</text>
+        <text class="tick" x="208" y="350" text-anchor="end">ซม. ต่อ 100 kW</text>
+      </g>
+      <g font-size="13.5">
+        <text x="208" y="34" text-anchor="end">ม่านน้ำ 3 ม./วิ</text>
+        <rect class="b" x="220" y="20" width="358.4" height="22"/>
+        <text class="val" x="584" y="35">2.24</text>
+
+        <text x="208" y="74" text-anchor="end">ทุ่นผลักดันน้ำ (ใบพัด 1.6 ม.)</text>
+        <rect class="b" x="220" y="60" width="313.6" height="22"/>
+        <text class="val" x="539" y="75">1.96</text>
+
+        <text x="208" y="114" text-anchor="end">ใบพัดใหญ่ 100 kW</text>
+        <rect class="b" x="220" y="100" width="204.8" height="22"/>
+        <text class="val" x="431" y="115">1.28</text>
+
+        <text x="208" y="154" text-anchor="end">เรือลากจูง</text>
+        <rect class="b dim" x="220" y="140" width="83.2" height="22"/>
+        <text class="val" x="309" y="155">0.52</text>
+
+        <text x="208" y="194" text-anchor="end">เรือหางยาว</text>
+        <rect class="b dim" x="220" y="180" width="67.2" height="22"/>
+        <text class="val" x="293" y="195">0.42</text>
+
+        <text x="208" y="234" text-anchor="end">เรือ outboard</text>
+        <rect class="b dim" x="220" y="220" width="40" height="22"/>
+        <text class="val" x="266" y="235">0.25</text>
+
+        <text x="208" y="274" text-anchor="end">หัวฉีด 10 บาร์</text>
+        <rect class="b dim" x="220" y="260" width="16" height="22"/>
+        <text class="val" x="242" y="275">0.10</text>
+
+        <text x="208" y="314" text-anchor="end">หัวฉีด 100 บาร์</text>
+        <text class="val" x="228" y="315">ระดับน้ำสูงขึ้นเล็กน้อย (−0.02)</text>
+      </g>
+    </svg>
+  </div>
+  <p class="note">แต่ละอุปกรณ์ใช้ 3 ชุดเรียงขวางลำน้ำ กำลังรวมต่างกันตามชนิด (90–1,800 kW) ม่านน้ำ ใบพัดใหญ่ 100 kW และหัวฉีดมาจากการทดสอบ 6 ที่กำลังรวม 300 kW เท่ากัน</p>
+</section>
+
+<section class="test">
+  <h2><span class="no">การทดสอบ 6</span> ม่านน้ำและหัวฉีด เทียบกับใบพัดใหญ่</h2>
+  <p class="prose">ทุ่นลอย 3 ชุดเรียงขวางลำน้ำ กำลังรวม 300 kW เท่ากันทุกกรณี สิ่งที่ดันน้ำคือโมเมนตัม (มวล × ความเร็ว) แรงดันต่อกำลังเท่ากับ 2η/v
+  ยิ่งฉีดเร็วยิ่งได้แรงต่อกำลังน้อย</p>
+  <div class="tbl"><table>
+    <thead><tr><th>กรณี (300 kW)</th><th>แรงดันน้ำ<br>kN</th><th>ระดับน้ำ<br>ซม.</th><th>kW ต่อ<br>ลด 1 ซม.</th><th>ผิวน้ำ<br>เร็วขึ้น</th><th>แรงเฉือนท้องน้ำ<br>สูงสุด N/ม²</th><th>ΔQ ถ้าวาง<br>ทุก 1 กม.</th></tr></thead>
+    <tbody>
+      <tr class="best"><td>ม่านน้ำ 3 ม./วิ (ท่อ ~1.3 ม.)</td><td>140</td><td>−6.72</td><td>45</td><td>+18.3%</td><td class="risk">22.5</td><td>+16.6%</td></tr>
+      <tr><td>ใบพัดใหญ่ 1.6 ม.</td><td>73</td><td>−3.83</td><td>78</td><td>+13.0%</td><td>12.0</td><td>+8.8%</td></tr>
+      <tr><td>หัวฉีด 10 บาร์ (~45 ม./วิ)</td><td>9.4</td><td>−0.31</td><td>967</td><td>+0.8%</td><td>5.4</td><td>+0.7%</td></tr>
+      <tr><td>หัวฉีด 100 บาร์ ตรง</td><td>3.0</td><td>+0.05</td><td>–</td><td>−2.8%</td><td>4.6</td><td>−0.2%</td></tr>
+      <tr><td>หัวฉีด 100 บาร์ กระจาย ±30°</td><td>3.0</td><td>+0.07</td><td>–</td><td>−3.4%</td><td>4.4</td><td>−0.2%</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note">ไม่มีเรือ: แรงเฉือนท้องน้ำสูงสุด 3.9 N/ม²</p>
+  <div class="pair">
+    <figure><img src="../wallmodel/test6/slices3d_case5.png" alt="ภาพการไหลของม่านน้ำ: ระนาบแนวนอน แนวตัดตามยาว และหน้าตัดขวาง" loading="lazy">
+      <figcaption>ม่านน้ำ: สายน้ำกว้าง ความเร็วปานกลาง เต็มความลึกมากกว่า ยังเร็ว ~3 ม./วิ ที่ระยะ 100 ม. (สเกลสีสูงสุด 2.1 ม./วิ)</figcaption></figure>
+    <figure><img src="../wallmodel/test6/slices3d_case1.png" alt="ภาพการไหลของใบพัดใหญ่: ระนาบแนวนอน แนวตัดตามยาว และหน้าตัดขวาง" loading="lazy">
+      <figcaption>ใบพัดใหญ่: สายน้ำแคบเร็วถึง 5 ม./วิ ชิดผิวน้ำ กระจายตัวภายใน ~60 ม. (สเกลสีสูงสุด 2.9 ม./วิ)</figcaption></figure>
+  </div>
+  <div class="verdict"><b>สรุป</b> ม่านน้ำความเร็วต่ำคุ้มค่ากว่าใบพัดใหญ่ ~1.7 เท่า แต่แรงเฉือนท้องน้ำสูงเกือบ 2 เท่า ควรติดตั้งท่อพ่นให้ใกล้ผิวน้ำ
+  หัวฉีดแรงดันสูงไม่เหมาะกับงานดันน้ำ</div>
+  <figure><img src="../wallmodel/test6/boat_compare.png" alt="กราฟเปรียบเทียบ 5 กรณีของการทดสอบ 6" loading="lazy"><figcaption>การทดสอบ 6: กราฟเปรียบเทียบทุกกรณี</figcaption></figure>
+</section>
+
+<section class="test">
+  <h2><span class="no">การทดสอบ 1</span> ชนิดเรือ</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>เรือ ×3 ลำ</th><th>กำลังรวม<br>kW</th><th>ระดับน้ำ<br>ซม.</th><th>kW ต่อ<br>ลด 1 ซม.</th><th>แรงเฉือนท้องน้ำ<br>สูงสุด N/ม²</th><th>ΔQ ถ้าวาง<br>ทุก 1 กม.</th></tr></thead>
+    <tbody>
+      <tr class="best"><td>ทุ่นผลักดันน้ำ</td><td>90</td><td>−1.76</td><td>51</td><td>5.4</td><td>+3.8%</td></tr>
+      <tr><td>เรือลากจูง</td><td>1,800</td><td>−9.42</td><td>191</td><td class="risk">607</td><td>+21.5%</td></tr>
+      <tr><td>เรือหางยาว</td><td>225</td><td>−0.94</td><td>240</td><td>9.6</td><td>+2.1%</td></tr>
+      <tr><td>เรือ outboard</td><td>330</td><td>−0.81</td><td>406</td><td>9.5</td><td>+1.4%</td></tr>
+    </tbody>
+  </table></div>
+  <figure><img src="../wallmodel/test1/slices3d_case3.png" alt="ภาพการไหลของเรือลากจูง 3 ลำ" loading="lazy">
+    <figcaption>เรือลากจูง 3 ลำ: ตัวเรือกินน้ำ 1.8 ม. ในน้ำลึก 3 ม. ใบพัดอยู่ใต้ท้องเรือ สายน้ำเร็วกว่า 4 ม./วิ วิ่งชิดท้องน้ำเกิน 100 ม. ระหว่างสายน้ำน้ำไหลช้าลง</figcaption></figure>
+  <div class="caution"><b>ข้อควรระวัง</b> เรือลากจูงในน้ำตื้นกัดเซาะท้องน้ำเป็นแนวแคบตามแนวใบพัด ควรใช้ในจุดที่น้ำลึกกว่าระยะกินน้ำ 2–3 เท่า</div>
+  <figure><img src="../wallmodel/test1/boat_compare.png" alt="กราฟเปรียบเทียบชนิดเรือ" loading="lazy"><figcaption>การทดสอบ 1: กราฟเปรียบเทียบ</figcaption></figure>
+</section>
+
+<section class="test">
+  <h2><span class="no">การทดสอบ 2</span> จำนวนเรือลากจูง</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>จำนวนเรือ</th><th>กำลังรวม<br>kW</th><th>แรงสุทธิ<br>kN</th><th>ระดับน้ำ<br>ซม.</th><th>kW ต่อ<br>ลด 1 ซม.</th><th>ผิวน้ำ<br>เร็วขึ้น</th><th>ΔQ ถ้าวาง<br>ทุก 1 กม.</th></tr></thead>
+    <tbody>
+      <tr><td>1 ลำ</td><td>600</td><td>52</td><td>−1.50</td><td>399</td><td>−10.7%</td><td>+6.9%</td></tr>
+      <tr><td>2 ลำ</td><td>1,200</td><td>110</td><td>−4.68</td><td>257</td><td>−0.5%</td><td>+14.1%</td></tr>
+      <tr class="best"><td>3 ลำ เรียงขวาง</td><td>1,800</td><td>174</td><td>−9.39</td><td>192</td><td>+8.3%</td><td>+21.5%</td></tr>
+      <tr><td>6 ลำ (2 แถว × 3)</td><td>3,600</td><td>308</td><td>−17.43</td><td>207</td><td>+24.5%</td><td>+35.7%</td></tr>
+    </tbody>
+  </table></div>
+  <p class="prose">แรงสุทธิเพิ่มเกือบเป็นสัดส่วนกับจำนวนเรือ ส่วนการลดระดับน้ำเพิ่มเร็วกว่าจำนวนเรือ เพราะสายน้ำหลายสายรวมกันเป็นกระแสกว้าง
+  เรือลำเดียวทำให้ผิวน้ำช้าลง เพราะสายน้ำชิดท้องน้ำดึงน้ำผิวลงไป ทุกกรณีแรงเฉือนท้องน้ำ 590–680 N/ม²</p>
+  <figure><img src="../wallmodel/test2/boat_compare.png" alt="กราฟเปรียบเทียบจำนวนเรือ" loading="lazy"><figcaption>การทดสอบ 2: กราฟเปรียบเทียบ</figcaption></figure>
+</section>
+
+<section class="test">
+  <h2><span class="no">การทดสอบ 3</span> ระดับน้ำ</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>ระดับน้ำ (เรือหางยาว 4 ลำ, 300 kW)</th><th>อัตราการไหล<br>ม³/วิ</th><th>ระดับน้ำ<br>ซม.</th><th>kW ต่อ<br>ลด 1 ซม.</th><th>ผิวน้ำ<br>เร็วขึ้น</th><th>แรงเฉือนสูงสุด<br>(ไม่มีเรือ) N/ม²</th><th>ΔQ ถ้าวาง<br>ทุก 1 กม.</th></tr></thead>
+    <tbody>
+      <tr><td>น้ำต่ำ 1 ม.</td><td>20</td><td>−2.56</td><td>117</td><td>−13.0%</td><td class="risk">108 (1.5)</td><td>+5.6%</td></tr>
+      <tr><td>น้ำปานกลาง 3 ม.</td><td>129</td><td>−1.28</td><td>234</td><td>+2.3%</td><td>8.4 (3.9)</td><td>+2.7%</td></tr>
+      <tr><td>น้ำสูง 5 ม. (ล้นตลิ่ง)</td><td>469</td><td>−0.04</td><td>~6,800</td><td>+0.5%</td><td>19 (8.1)</td><td>+0.1%</td></tr>
+    </tbody>
+  </table></div>
+  <div class="caution"><b>ข้อควรระวัง</b> ช่วงน้ำหลากล้นตลิ่ง ผลของเรือเล็กจนวัดไม่ได้ ส่วนช่วงน้ำต่ำได้ผลมากที่สุดแต่กัดเซาะท้องน้ำแรงที่สุด</div>
+  <figure><img src="../wallmodel/test3/boat_compare.png" alt="กราฟเปรียบเทียบระดับน้ำ" loading="lazy"><figcaption>การทดสอบ 3: กราฟเปรียบเทียบ</figcaption></figure>
+</section>
+
+<section class="test">
+  <h2><span class="no">การทดสอบ 4</span> มุมกดใบพัด</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>มุม (เรือหางยาว 4 ลำ, 300 kW)</th><th>แรงสุทธิ<br>kN</th><th>ระดับน้ำ<br>ซม.</th><th>kW ต่อ<br>ลด 1 ซม.</th><th>ผิวน้ำ<br>เร็วขึ้น</th><th>แรงเฉือนท้องน้ำ<br>สูงสุด N/ม²</th><th>ΔQ ถ้าวาง<br>ทุก 1 กม.</th></tr></thead>
+    <tbody>
+      <tr class="best"><td>0° แนวนอน</td><td>20.2</td><td>−1.35</td><td>222</td><td>+3.5%</td><td>8.4</td><td>+2.7%</td></tr>
+      <tr><td>12° (ปกติของเรือหางยาว)</td><td>19.8</td><td>−1.28</td><td>234</td><td>+2.3%</td><td>8.4</td><td>+2.7%</td></tr>
+      <tr><td>25°</td><td>8.5</td><td>−0.73</td><td>412</td><td>+0.9%</td><td class="risk">20.4</td><td>+1.2%</td></tr>
+    </tbody>
+  </table></div>
+  <div class="verdict"><b>สรุป</b> ให้ใบพัดอยู่แนวนอนหรือกดไม่เกิน 12° การกดใบพัดลงมากเสียแรงดันน้ำเกินครึ่งและกัดเซาะท้องน้ำเพิ่ม 2.4 เท่า</div>
+  <figure><img src="../wallmodel/test4/boat_compare.png" alt="กราฟเปรียบเทียบมุมใบพัด" loading="lazy"><figcaption>การทดสอบ 4: กราฟเปรียบเทียบ</figcaption></figure>
+</section>
+
+<section class="test">
+  <h2><span class="no">การทดสอบ 5</span> การจัดแถวเรือ</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>การจัดวาง (เรือหางยาว 6 ลำ, 450 kW)</th><th>แรงสุทธิ<br>kN</th><th>ระดับน้ำ<br>ซม.</th><th>kW ต่อ<br>ลด 1 ซม.</th><th>ΔQ ถ้าวาง<br>ทุก 1 กม.</th></tr></thead>
+    <tbody>
+      <tr class="best"><td>1 แถว × 6 (ขวางลำน้ำ)</td><td>32.3</td><td>−2.14</td><td>210</td><td>+4.3%</td></tr>
+      <tr><td>2 แถว × 3</td><td>24.9</td><td>−1.21</td><td>373</td><td>+3.3%</td></tr>
+      <tr><td>3 แถว × 2</td><td>23.8</td><td>−0.85</td><td>528</td><td>+3.2%</td></tr>
+    </tbody>
+  </table></div>
+  <p class="prose">เรือแถวหลังดูดน้ำที่ถูกเร่งมาแล้วจากแถวหน้า จึงเพิ่มแรงได้น้อยลง ส่วนหนึ่งของผลต่างด้านระดับน้ำมาจากแถวหลังมีระยะถึงท้ายช่วงจำลองสั้นกว่า</p>
+  <figure><img src="../wallmodel/test5/boat_compare.png" alt="กราฟเปรียบเทียบการจัดแถวเรือ" loading="lazy"><figcaption>การทดสอบ 5: กราฟเปรียบเทียบ</figcaption></figure>
+</section>
+
+<section class="test">
+  <h2>ข้อจำกัดของผล</h2>
+  <ul class="plain prose">
+    <li>ค่าเครื่องยนต์และใบพัดของเรือแต่ละชนิดเป็นค่าประมาณ ควรใส่ข้อมูลจริงของเรือที่จะใช้ก่อนนำตัวเลขไปตัดสินใจ</li>
+    <li>ม่านน้ำและหัวฉีดจำลองเป็นแหล่งโมเมนตัมในอุดมคติ ประสิทธิภาพปั๊ม 70% ไม่รวมการสูญเสียที่ปากดูดและในท่อ</li>
+    <li>ผิวน้ำเป็นแบบ rigid lid: ไม่จำลองคลื่นหรือผิวน้ำยุบรอบใบพัดตื้น ระดับน้ำคำนวณจากความดันใต้ผิวน้ำ</li>
+    <li>wall model ให้แรงเสียดทานตรงกับสมการแมนนิ่ง ±10% ในช่องสี่เหลี่ยม ส่วนหน้าตัดคางหมูช่วง ~100 ม. แรกยังสูงกว่า 1.3–1.5 เท่า
+      ค่าแรงเฉือนท้องน้ำของสายน้ำที่วิ่งชิดท้องน้ำ (เช่นเรือลากจูง ~600 N/ม²) ขึ้นกับสมมติฐานนี้ ควรยืนยันด้วยการวัดจริง</li>
+    <li>"ΔQ ถ้าวางทุก 1 กม." ประมาณจากสมดุลโมเมนตัมของช่วงจำลอง 150 ม. ไม่ได้จำลองทั้งลำน้ำ เหมาะใช้เปรียบเทียบระหว่างทางเลือกมากกว่าทำนายค่าสัมบูรณ์</li>
+  </ul>
+</section>
+
+<section>
+  <details>
+    <summary>วิธีรันซ้ำ</summary>
+    <p class="prose" style="margin-top:10px">โค้ดอยู่ที่ <a href="https://github.com/ThTpk/water_flow_simulation">github.com/ThTpk/water_flow_simulation</a>
+    รันการทดสอบด้วย <code>python -m floodsim --boat-test N --gpu-duty 0.3 --out results/testN</code> (N = 1–6)
+    แต่ละการทดสอบใช้เวลา ~25–50 นาทีบน RTX 5070 Laptop ที่ GPU ทำงาน 30%</p>
+  </details>
+</section>
+
+</div>
+
+</body>
+</html>
