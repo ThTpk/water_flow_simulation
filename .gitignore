@@ -1,0 +1,10 @@
+# Python
+__pycache__/
+*.pyc
+
+# Generated simulation outputs (images, CSV, VTK, large HTML viewers)
+results/
+*.vtk
+
+# Local tool settings
+.claude/

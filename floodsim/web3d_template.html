@@ -1,0 +1,619 @@
+<meta charset="utf-8">
+<title>__TITLE__</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@500;600&family=IBM+Plex+Sans+Thai:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: full-bleed WebGL river at night; a translucent instrument panel docked left (bottom sheet on phones). */
+:root {
+  --ground: #0a1215;       /* riverbed at night */
+  --panel: rgba(12, 21, 25, 0.9);
+  --line: #233740;
+  --fg: #d9e5e7;
+  --muted: #86a0a7;
+  --accent: #6cc7d6;       /* water-glass cyan, used for controls */
+  --warm: #eda25a;
+  --font-display: "Bai Jamjuree", "IBM Plex Sans Thai", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans Thai", "Leelawadee UI", "Tahoma", system-ui, sans-serif;
+  --font-data: "IBM Plex Mono", ui-monospace, "Consolas", monospace;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--ground); color: var(--fg); font-family: var(--font-body); font-size: 13.5px; overflow: hidden; }
+#stage { position: fixed; inset: 0; }
+#stage canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+
+#panel {
+  position: fixed; top: calc(12px + env(safe-area-inset-top, 0px)); left: 12px; bottom: 12px; width: 340px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+  backdrop-filter: blur(6px); overflow-y: auto; overflow-x: hidden; padding: 16px; display: flex; flex-direction: column; gap: 16px;
+}
+#panel h1 { font-family: var(--font-display); font-weight: 600; font-size: 19px; line-height: 1.3; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); font-size: 12px; line-height: 1.5; margin: 4px 0 0; }
+.sec { display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--line); padding-top: 12px; }
+.lbl { font-size: 11px; letter-spacing: .06em; color: var(--muted); text-transform: uppercase; font-weight: 500; }
+
+.cases { display: flex; flex-direction: column; gap: 6px; }
+.case { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.case input { accent-color: var(--accent); width: 16px; height: 16px; margin: 0; }
+.chip { width: 10px; height: 10px; border-radius: 2px; flex: none; }
+
+table.st { width: 100%; border-collapse: collapse; font-size: 12px; }
+table.st th, table.st td { padding: 4px 4px; text-align: right; border-bottom: 1px solid var(--line); }
+table.st th:first-child, table.st td:first-child { text-align: left; color: var(--muted); font-weight: 400; }
+table.st thead th { font-weight: 500; font-size: 11.5px; vertical-align: bottom; line-height: 1.3; }
+table.st td { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+table.st td.best { color: var(--fg); font-weight: 500; }
+.tblwrap { overflow-x: auto; min-width: 0; }
+table.st.many td:first-child { font-size: 11.5px; line-height: 1.35; }
+table.st.many th, table.st.many td { padding: 4px 3px; }
+
+svg.chart { width: 100%; height: auto; display: block; }
+svg.chart text { fill: var(--muted); font-family: var(--font-data); font-size: 9px; }
+
+.row { display: flex; align-items: center; gap: 10px; }
+.row label { flex: 1; min-width: 0; }
+.row output { font-family: var(--font-data); font-size: 12px; color: var(--muted); min-width: 3.5em; text-align: right; }
+input[type=range] { accent-color: var(--accent); width: 130px; }
+select { background: #0f1b20; color: var(--fg); border: 1px solid var(--line); border-radius: 6px; padding: 3px 6px; font: inherit; }
+.btns { display: flex; flex-wrap: wrap; gap: 6px; }
+button {
+  font: inherit; font-size: 12.5px; color: var(--fg); background: #13232a; border: 1px solid var(--line);
+  border-radius: 6px; padding: 5px 10px; cursor: pointer;
+}
+button:hover { border-color: var(--accent); }
+button[aria-pressed=true] { background: #1b3a42; border-color: var(--accent); }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.check { display: flex; align-items: center; gap: 8px; }
+.check input { accent-color: var(--accent); margin: 0; }
+
+.bar { height: 8px; border-radius: 2px; }
+.ticks { display: flex; justify-content: space-between; font-family: var(--font-data); font-size: 10.5px; color: var(--muted); }
+.note { color: var(--muted); font-size: 11.5px; line-height: 1.55; margin: 0; }
+
+.qrow { display: grid; grid-template-columns: 1fr; gap: 3px; }
+.qhead { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; }
+.qhead b { font-weight: 500; min-width: 0; }
+.qhead span { font-family: var(--font-data); font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+.qtrack { position: relative; height: 12px; background: #13232a; border-radius: 2px; }
+.qbase, .qadd { position: absolute; top: 0; bottom: 0; }
+.qbase { left: 0; background: #3a5059; border-radius: 2px 0 0 2px; }
+.qcap { position: absolute; top: -3px; bottom: -3px; width: 0; border-left: 1.5px dashed var(--fg); opacity: .55; }
+.qsum { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 5px; font-size: 12.5px; line-height: 1.5; }
+.qsum b { font-family: var(--font-data); font-weight: 500; }
+#toggle { display: none; }
+#hud { position: fixed; right: 14px; bottom: calc(12px + env(safe-area-inset-bottom, 0px)); font-family: var(--font-data); font-size: 11px; color: var(--muted); pointer-events: none; }
+#err { position: fixed; inset: 0; display: grid; place-items: center; padding: 24px; text-align: center; color: var(--muted); }
+
+@media (max-width: 720px) {
+  #panel { top: auto; left: 8px; right: 8px; width: auto; bottom: calc(8px + env(safe-area-inset-bottom, 0px)); max-height: 52%; }
+  #panel.closed { display: none; }
+  #toggle { display: block; position: fixed; top: calc(10px + env(safe-area-inset-top, 0px)); right: 10px; z-index: 2; }
+  #hud { display: none; }
+}
+</style>
+
+<div id="stage"></div>
+<button id="toggle" type="button" aria-controls="panel">แผงควบคุม</button>
+<aside id="panel" aria-label="แผงควบคุม">
+  <div>
+    <h1 id="ttl"></h1>
+    <p class="sub" id="subt"></p>
+  </div>
+
+  <div class="sec">
+    <span class="lbl">กรณีที่แสดง (วางเทียบกันขวางลำน้ำ)</span>
+    <div class="cases" id="cases"></div>
+  </div>
+
+  <div class="sec">
+    <span class="lbl">ผลเทียบ (กำลังรวมเท่ากัน)</span>
+    <div class="tblwrap"><table class="st" id="stats"></table></div>
+  </div>
+
+  <div class="sec" id="qsec">
+    <span class="lbl">ปริมาณน้ำที่ไหล Q (ม³/วิ)</span>
+    <div class="row"><label for="km">วางกลุ่มเรือซ้ำทุก</label><input id="km" type="range" min="0.5" max="5" step="0.5" value="1"><output id="kmo">1 กม.</output></div>
+    <div id="qbars" class="cases"></div>
+    <ul class="qsum" id="qsum"></ul>
+    <p class="note">ในช่วงจำลอง 150 ม. ปริมาณน้ำที่ทางเข้าถูกกำหนดไว้ ค่า Q ที่เพิ่มจึงประมาณจากแรงสุทธิที่น้ำได้รับจริง
+      (หักแรงต้านตัวเรือและแรงเสียดทานที่เพิ่มแล้ว) ด้วยสมดุลโมเมนตัม Q′/Q = √(1 + F / ρgALS) เมื่อวางกลุ่มเรือซ้ำทุกระยะ L
+      ตลอดลำน้ำ — เส้นประ = ขอบเขตบนถ้าแรงขับทั้งหมดถึงน้ำ</p>
+  </div>
+
+  <div class="sec">
+    <span class="lbl">ระดับน้ำตามแนวลำน้ำ (ซม., เทียบทางออก)</span>
+    <svg class="chart" id="chart" viewBox="0 0 300 130" role="img" aria-label="กราฟระดับน้ำตามแนวลำน้ำ"></svg>
+  </div>
+
+  <div class="sec">
+    <span class="lbl">ภาพเคลื่อนไหว</span>
+    <div class="btns">
+      <button id="play" type="button" aria-pressed="true">หยุด</button>
+      <button type="button" data-cam="oblique">มุมเฉียง</button>
+      <button type="button" data-cam="near">ใกล้เรือ</button>
+      <button type="button" data-cam="top">มองจากบน</button>
+      <button type="button" data-cam="side">ด้านข้าง</button>
+    </div>
+    <div class="row"><label for="spd">ความเร็วเวลา</label><input id="spd" type="range" min="1" max="20" step="1" value="6"><output id="spdo">6×</output></div>
+    <div class="row"><label for="npart">อนุภาคต่อกรณี</label>
+      <select id="npart"><option>1500</option><option>3000</option><option selected>8000</option><option>15000</option><option>25000</option></select></div>
+    <div class="row"><label for="exag">ขยายแนวดิ่ง</label><input id="exag" type="range" min="1" max="8" step="0.5" value="4"><output id="exago">4×</output></div>
+  </div>
+
+  <div class="sec">
+    <span class="lbl">ชั้นข้อมูล</span>
+    <label class="check"><input type="checkbox" id="shear" checked> สีท้องน้ำตามแรงเฉือน (กัดเซาะ)</label>
+    <label class="check"><input type="checkbox" id="surf" checked> ผิวน้ำ</label>
+    <label class="check"><input type="checkbox" id="slice"> ระนาบความเร็วแนวนอน</label>
+    <div class="row"><label for="slz">ความสูงระนาบจากท้องน้ำ</label><input id="slz" type="range" min="0" max="10" step="1" value="5"><output id="slzo"></output></div>
+  </div>
+
+  <div class="sec">
+    <span class="lbl">ความเร็ว (ม./วิ)</span>
+    <div class="bar" id="spbar"></div>
+    <div class="ticks" id="sptk"></div>
+    <span class="lbl" style="margin-top:6px">แรงเฉือนท้องน้ำ (N/ม²)</span>
+    <div class="bar" id="tbar"></div>
+    <div class="ticks" id="ttk"></div>
+  </div>
+
+  <p class="note">อนุภาคเคลื่อนตามสนามความเร็ว<b>เฉลี่ยเวลา</b>จากแบบจำลอง LBM 3 มิติ จึงไม่แสดงความปั่นป่วนรายวินาที
+    ตัวเรือ/ทุ่นเป็นสีขาว, ใบพัดเป็นจานสีส้ม, ท่อพ่นม่านน้ำเป็นทรงกระบอก ลากเพื่อหมุน, เลื่อนล้อเพื่อซูม, คลิกขวาลากเพื่อเลื่อน</p>
+</aside>
+<div id="hud"></div>
+
+<script id="data" type="application/json">__DATA__</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(async function () {
+"use strict";
+if (!window.THREE) { document.body.insertAdjacentHTML("beforeend", '<div id="err">โหลด three.js ไม่ได้ — ตรวจการเชื่อมต่ออินเทอร์เน็ต</div>'); return; }
+const D = JSON.parse(document.getElementById("data").textContent);
+// ข้อมูลสนามความเร็วของหน้าที่มีหลายกรณีเก็บแยกไฟล์ (src) — โหลดก่อนเริ่ม
+for (const c of D.cases) {
+  if (!c.src) continue;
+  try { const j = await (await fetch(c.src)).json(); c.u = j.u; c.tau = j.tau; }
+  catch (e) { document.body.insertAdjacentHTML("beforeend", '<div id="err">โหลดข้อมูล ' + c.src + ' ไม่ได้ — หน้านี้ต้องเปิดผ่านลิงก์ หรือเปิดผ่านเว็บเซิร์ฟเวอร์ (ไม่ใช่ดับเบิลคลิกไฟล์)</div>'); return; }
+}
+const COLORS = ["#4fc6dc", "#eda25a", "#c58be0", "#7fd08a", "#f07a8c", "#e2cf5b", "#6f9cf0", "#5fd6b0", "#d98a5a"];
+const BASE_COLOR = "#9aa8ae";   // ไม่มีเรือ
+const GAP = 14;
+const $ = (id) => document.getElementById(id);
+
+// ---------- colour maps
+function turbo(t, out, o) {
+  t = t < 0 ? 0 : t > 1 ? 1 : t;
+  let r = 0.13572138 + t * (4.6153926 + t * (-42.66032258 + t * (132.13108234 + t * (-152.94239396 + t * 59.28637943))));
+  let g = 0.09140261 + t * (2.19418839 + t * (4.84296658 + t * (-14.18503333 + t * (4.27729857 + t * 2.82956604))));
+  let b = 0.1066733 + t * (12.64194608 + t * (-60.58204836 + t * (110.36276771 + t * (-89.90310912 + t * 27.34824973))));
+  out[o] = r < 0 ? 0 : r > 1 ? 1 : r; out[o + 1] = g < 0 ? 0 : g > 1 ? 1 : g; out[o + 2] = b < 0 ? 0 : b > 1 ? 1 : b;
+}
+const SAND = [0.22, 0.21, 0.18], AMBER = [0.85, 0.55, 0.18], HOT = [0.95, 0.20, 0.42];
+function shearCol(t, out, o) {
+  const a = t < 0.5 ? SAND : AMBER, b = t < 0.5 ? AMBER : HOT, f = t < 0.5 ? t * 2 : (t - 0.5) * 2;
+  for (let k = 0; k < 3; k++) out[o + k] = a[k] + (b[k] - a[k]) * f;
+}
+
+// ---------- decode cases
+function dec(s, T) { const b = atob(s), a = new T(b.length); for (let i = 0; i < b.length; i++) a[i] = b.charCodeAt(i) & 255; return T === Int8Array ? new Int8Array(a.buffer) : a; }
+const cases = D.cases.map((c, k) => {
+  c.u = dec(c.u, Int8Array); c.tau = new Uint16Array(dec(c.tau, Uint8Array).buffer);
+  c.color = c.stats ? COLORS[D.cases.slice(0, k).filter((q) => q.stats).length % COLORS.length] : BASE_COLOR;
+  c.visible = true; c.fluid = []; c.inlet = [];
+  const n = c.nx * c.ny;
+  for (let kz = 0; kz < c.nz; kz++) for (let j = 0; j < c.ny; j++) for (let i = 0; i < c.nx; i++) {
+    const id = (kz * n + j * c.nx + i);
+    if (c.u[id * 3] !== -128) { c.fluid.push(id); if (i === 0) c.inlet.push(id); }
+  }
+  return c;
+});
+const VMAX = Math.max(1.0, ...cases.map((c) => c.sp99)) * 1.0;
+const TAU_TOP = Math.max(...cases.map((c) => c.tau_top));
+// สีท้องน้ำ: ทราย = แรงเฉือนปกติของแม่น้ำ (ค่ากลางของกรณีไม่มีเรือ), ไล่สีเมื่อสูงกว่าปกติ (สเกลลอการิทึม)
+const TAU_LO = Math.max(0.1, (cases.find((c) => !c.stats) || cases.reduce((a, c) => (c.tau_med < a.tau_med ? c : a))).tau_med * 1.2);
+const TAU_HI = Math.max(TAU_TOP, TAU_LO * 4);
+const tauT = (v) => (v <= TAU_LO ? 0 : Math.min(Math.log(v / TAU_LO) / Math.log(TAU_HI / TAU_LO), 1));
+const Lmax = Math.max(...cases.map((c) => c.L));
+
+// ---------- velocity sampling (trilinear, solid corners excluded)
+const vtmp = [0, 0, 0];
+function vel(c, x, y, z) {
+  const gx = x / c.dxs - 0.5, gy = (y - c.y0) / c.dxs - 0.5, gz = z / c.dz - 0.5;
+  let i0 = Math.floor(gx), j0 = Math.floor(gy), k0 = Math.floor(gz);
+  const fx = gx - i0, fy = gy - j0, fz = gz - k0;
+  let sx = 0, sy = 0, sz = 0, sw = 0;
+  const u = c.u, nx = c.nx, ny = c.ny, nz = c.nz;
+  for (let dk = 0; dk < 2; dk++) {
+    const k = Math.min(Math.max(k0 + dk, 0), nz - 1), wz = dk ? fz : 1 - fz;
+    for (let dj = 0; dj < 2; dj++) {
+      const j = Math.min(Math.max(j0 + dj, 0), ny - 1), wy = dj ? fy : 1 - fy;
+      for (let di = 0; di < 2; di++) {
+        const i = Math.min(Math.max(i0 + di, 0), nx - 1), w = (di ? fx : 1 - fx) * wy * wz;
+        const id = ((k * ny + j) * nx + i) * 3;
+        if (u[id] === -128 || w <= 0) continue;
+        sx += w * u[id]; sy += w * u[id + 1]; sz += w * u[id + 2]; sw += w;
+      }
+    }
+  }
+  if (sw < 1e-4) { vtmp[0] = vtmp[1] = vtmp[2] = 0; return false; }
+  const s = c.scale / sw; vtmp[0] = sx * s; vtmp[1] = sy * s; vtmp[2] = sz * s; return true;
+}
+function solidAt(c, x, y, z) {
+  const i = Math.floor(x / c.dxs), j = Math.floor((y - c.y0) / c.dxs), k = Math.floor(z / c.dz);
+  if (i < 0 || i >= c.nx || j < 0 || j >= c.ny || k < 0 || k >= c.nz) return true;
+  return c.u[((k * c.ny + j) * c.nx + i) * 3] === -128;
+}
+
+// ---------- three.js scene
+const stage = $("stage");
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+renderer.setClearColor(0x0a1215, 1);
+stage.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0x0a1215, Lmax * 1.6, Lmax * 4);
+const camera = new THREE.PerspectiveCamera(42, 1, 0.5, 5000);
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.08; controls.maxPolarAngle = Math.PI * 0.495;
+scene.add(new THREE.HemisphereLight(0xbfdde4, 0x1c1612, 0.75));
+const sun = new THREE.DirectionalLight(0xffffff, 0.65); sun.position.set(-60, 120, 80); scene.add(sun);
+
+function textSprite(txt, color) {
+  const cv = document.createElement("canvas"), g = cv.getContext("2d"), fs = 56;
+  g.font = `600 ${fs}px "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif`;
+  const w = Math.ceil(g.measureText(txt).width) + 40; cv.width = w; cv.height = fs + 30;
+  g.font = `600 ${fs}px "Bai Jamjuree", "IBM Plex Sans Thai", sans-serif`;
+  g.fillStyle = "rgba(10,18,21,0.75)"; g.fillRect(0, 0, w, cv.height);
+  g.fillStyle = color; g.fillRect(0, 0, 10, cv.height);
+  g.fillStyle = "#e6f0f1"; g.textBaseline = "middle"; g.fillText(txt, 26, cv.height / 2 + 2);
+  const tex = new THREE.CanvasTexture(cv); tex.minFilter = THREE.LinearFilter;
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, depthWrite: false, transparent: true }));
+  const hgt = 3.2; sp.scale.set(hgt * w / cv.height, hgt, 1); return sp;
+}
+
+let exag = 4, zOff = 0;
+const totalW = cases.reduce((s, c) => s + c.W, 0) + GAP * (cases.length - 1);
+cases.forEach((c) => {
+  const grp = new THREE.Group(), flat = new THREE.Group();
+  c.grp = grp; c.flat = flat; scene.add(grp); scene.add(flat);
+
+  // bed: one vertex per (x edge, y cell centre), coloured by bed shear or sand
+  const NX = c.nx + 1, NY = c.ny, pos = new Float32Array(NX * NY * 3), col = new Float32Array(NX * NY * 3);
+  for (let j = 0; j < NY; j++) for (let i = 0; i < NX; i++) {
+    const v = (j * NX + i) * 3; pos[v] = i * c.dxs; pos[v + 1] = c.zb[j]; pos[v + 2] = -(c.y0 + (j + 0.5) * c.dxs);
+  }
+  const idx = [];
+  for (let j = 0; j < NY - 1; j++) for (let i = 0; i < NX - 1; i++) {
+    const a = j * NX + i, b = a + 1, d = a + NX, e = d + 1; idx.push(a, d, b, b, d, e);
+  }
+  const bg = new THREE.BufferGeometry();
+  bg.setAttribute("position", new THREE.BufferAttribute(pos, 3)); bg.setAttribute("color", new THREE.BufferAttribute(col, 3));
+  bg.setIndex(idx); bg.computeVertexNormals();
+  c.bedCol = col; c.bedGeo = bg;
+  grp.add(new THREE.Mesh(bg, new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide })));
+
+  // water surface + domain outline
+  const ws = new THREE.Mesh(new THREE.PlaneGeometry(c.L, c.W), new THREE.MeshBasicMaterial({ color: 0x6cc7d6, transparent: true, opacity: 0.06, depthWrite: false, side: THREE.DoubleSide }));
+  ws.rotation.x = -Math.PI / 2; ws.position.set(c.L / 2, c.h, -(c.y0 + c.W / 2)); grp.add(ws); c.surf = ws;
+  const box = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(c.L, c.h, c.W)), new THREE.LineBasicMaterial({ color: 0x2c4650 }));
+  box.position.set(c.L / 2, c.h / 2, -(c.y0 + c.W / 2)); grp.add(box);
+
+  // hulls (tapered bow, as in the model) and propellers / ducts
+  const hullMat = new THREE.MeshStandardMaterial({ color: 0xe9ecea, roughness: 0.6, metalness: 0.05 });
+  c.hulls.forEach(([x0, x1, y0, y1, z0, z1]) => {
+    const L = x1 - x0, yc = (y0 + y1) / 2, hb = (y1 - y0) / 2, sh = new THREE.Shape(), m = 8;
+    sh.moveTo(x0, yc - hb * 0.35);
+    for (let s = 1; s <= m; s++) { const xx = x0 + 0.25 * L * s / m; sh.lineTo(xx, yc - hb * Math.max(0.35, s / m)); }
+    sh.lineTo(x1, yc - hb); sh.lineTo(x1, yc + hb);
+    for (let s = m; s >= 0; s--) { const xx = x0 + 0.25 * L * s / m; sh.lineTo(xx, yc + hb * Math.max(0.35, s / m)); }
+    const g = new THREE.ExtrudeGeometry(sh, { depth: (z1 - z0) + 0.5, bevelEnabled: false });
+    g.rotateX(-Math.PI / 2); g.translate(0, z0, 0);
+    grp.add(new THREE.Mesh(g, hullMat));
+  });
+  c.props.forEach((p) => {
+    const t = p.tilt * Math.PI / 180, w = p.yaw * Math.PI / 180;
+    const ax = new THREE.Vector3(Math.cos(t) * Math.cos(w), -Math.sin(t), -Math.cos(t) * Math.sin(w)).normalize();
+    let m;
+    if (c.jet) {
+      m = new THREE.Mesh(new THREE.CylinderGeometry(p.D / 2, p.D / 2, 1.6, 20, 1, true), new THREE.MeshStandardMaterial({ color: 0xeda25a, side: THREE.DoubleSide, roughness: 0.5 }));
+      m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), ax);
+      m.position.set(p.x - ax.x * 0.8, p.z - ax.y * 0.8, -p.y - ax.z * 0.8);
+    } else {
+      m = new THREE.Mesh(new THREE.CircleGeometry(p.D / 2, 28), new THREE.MeshBasicMaterial({ color: 0xeda25a, side: THREE.DoubleSide }));
+      m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), ax);
+      m.position.set(p.x, p.z, -p.y);
+    }
+    grp.add(m);
+  });
+
+  // speed slice texture
+  const tex = new THREE.DataTexture(new Uint8Array(c.nx * c.ny * 4), c.nx, c.ny, THREE.RGBAFormat);
+  tex.magFilter = THREE.LinearFilter; tex.minFilter = THREE.LinearFilter;
+  const sl = new THREE.Mesh(new THREE.PlaneGeometry(c.L, c.W), new THREE.MeshBasicMaterial({ map: tex, transparent: true, depthWrite: false, side: THREE.DoubleSide }));
+  sl.rotation.x = -Math.PI / 2; sl.position.set(c.L / 2, 0, -(c.y0 + c.W / 2)); sl.visible = false;
+  grp.add(sl); c.slice = sl; c.sliceTex = tex;
+
+  const lab = textSprite(c.label, c.color); lab.position.set(0, 0, -(c.y0 + c.W / 2)); lab.center.set(0, 0); flat.add(lab); c.lab = lab;
+
+  // place side by side across the river direction
+  c.zc = zOff + c.W / 2; zOff += c.W + GAP;
+});
+// วางลำน้ำเทียบกัน: ไม่เกิน 3 กรณีเรียงขวาง, มากกว่านั้นเป็นตาราง 3 คอลัมน์ (แถวต่อกันตามแนวลำน้ำ)
+function layout() {
+  const vis = cases.filter((c) => c.visible), n = Math.max(vis.length, 1);
+  const cols = Math.min(n, 3), rows = Math.ceil(n / cols), colW = Math.max(...vis.map((c) => c.W), 1), gx = 30;
+  const Z = cols * colW + (cols - 1) * GAP, X = rows * Lmax + (rows - 1) * gx;
+  cases.forEach((c) => (c.grp.visible = c.flat.visible = c.visible));
+  vis.forEach((c, i) => {
+    const zc = -Z / 2 + (i % cols) * (colW + GAP) + colW / 2, x0 = -X / 2 + Math.floor(i / cols) * (Lmax + gx);
+    c.zw = zc; c.xw = x0;
+    // group local Z = -y; shift so this channel's centre line sits at world zc
+    const off = zc + (c.y0 + c.W / 2);
+    c.grp.position.set(x0, 0, off); c.flat.position.set(x0, 0, off);
+    c.grp.scale.y = exag; c.lab.position.y = c.h * exag + 1.5;
+  });
+  const R = Math.max(X, Z); scene.fog.near = R * 1.6; scene.fog.far = R * 4;
+  return { X, Z };
+}
+function paintBed() {
+  const sh = $("shear").checked, o = [0, 0, 0];
+  cases.forEach((c) => {
+    const NX = c.nx + 1, col = c.bedCol;
+    for (let j = 0; j < c.ny; j++) for (let i = 0; i < NX; i++) {
+      const t = sh ? tauT(c.tau[j * c.nx + Math.min(i, c.nx - 1)] / 100) : 0;
+      shearCol(t, col, (j * NX + i) * 3);
+    }
+    c.bedGeo.attributes.color.needsUpdate = true;
+  });
+}
+function paintSlice() {
+  const on = $("slice").checked;
+  cases.forEach((c) => {
+    c.slice.visible = on && c.visible;
+    if (!on) return;
+    const kz = Math.min(+$("slz").value, c.nz - 1), d = c.sliceTex.image.data, o = [0, 0, 0];
+    for (let j = 0; j < c.ny; j++) for (let i = 0; i < c.nx; i++) {
+      const id = ((kz * c.ny + j) * c.nx + i) * 3, p = (j * c.nx + i) * 4;
+      if (c.u[id] === -128) { d[p + 3] = 0; continue; }
+      const s = Math.hypot(c.u[id], c.u[id + 1], c.u[id + 2]) * c.scale;
+      turbo(s / VMAX, o, 0); d[p] = o[0] * 255; d[p + 1] = o[1] * 255; d[p + 2] = o[2] * 255; d[p + 3] = 200;
+    }
+    c.sliceTex.needsUpdate = true; c.slice.position.y = (kz + 0.5) * c.dz;
+  });
+  const c0 = cases[0]; $("slzo").textContent = ((Math.min(+$("slz").value, c0.nz - 1) + 0.5) * c0.dz).toFixed(1) + " ม.";
+}
+
+// ---------- particles
+const TRAIL = 16, TDT = 0.4;   // จุดหางอนุภาคทุก 0.4 วิ (เวลาจำลอง) → หางยาว ~6 วิ
+function initParticles(c, N) {
+  if (c.lines) { c.grp.remove(c.lines); c.lines.geometry.dispose(); }
+  c.N = N; c.P = new Float32Array(N * 3); c.tr = new Float32Array(N * TRAIL * 3); c.ts = new Float32Array(N * TRAIL);
+  c.life = new Float32Array(N); c.head = 0; c.acc = 0;
+  for (let p = 0; p < N; p++) spawn(c, p, false);
+  const g = new THREE.BufferGeometry(), nv = N * (TRAIL - 1) * 2;
+  g.setAttribute("position", new THREE.BufferAttribute(new Float32Array(nv * 3), 3).setUsage(THREE.DynamicDrawUsage));
+  g.setAttribute("color", new THREE.BufferAttribute(new Float32Array(nv * 3), 3).setUsage(THREE.DynamicDrawUsage));
+  c.lines = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }));
+  c.lines.frustumCulled = false; c.grp.add(c.lines);
+}
+function spawn(c, p, inlet) {
+  const src = inlet && c.inlet.length ? c.inlet : c.fluid, id = src[(Math.random() * src.length) | 0];
+  const n = c.nx * c.ny, kz = Math.floor(id / n), j = Math.floor((id % n) / c.nx), i = id % c.nx;
+  const x = inlet ? Math.random() * c.dxs * 0.6 : (i + Math.random()) * c.dxs;
+  const y = c.y0 + (j + Math.random()) * c.dxs, z = (kz + Math.random()) * c.dz;
+  const P = c.P; P[p * 3] = x; P[p * 3 + 1] = y; P[p * 3 + 2] = z;
+  vel(c, x, y, z); const s = Math.hypot(vtmp[0], vtmp[1], vtmp[2]);
+  for (let k = 0; k < TRAIL; k++) { const o = (p * TRAIL + k) * 3; c.tr[o] = x; c.tr[o + 1] = y; c.tr[o + 2] = z; c.ts[p * TRAIL + k] = s; }
+  c.life[p] = 8 + Math.random() * 30;
+}
+function step(c, dt) {
+  c.acc += dt;
+  if (c.acc >= TDT) { c.acc %= TDT; c.head = (c.head + 1) % TRAIL; }
+  const P = c.P, h = c.head;
+  for (let p = 0; p < c.N; p++) {
+    let x = P[p * 3], y = P[p * 3 + 1], z = P[p * 3 + 2];
+    vel(c, x, y, z);
+    const mx = x + vtmp[0] * dt * 0.5, my = y + vtmp[1] * dt * 0.5, mz = z + vtmp[2] * dt * 0.5;
+    vel(c, mx, my, mz);
+    x += vtmp[0] * dt; y += vtmp[1] * dt; z += vtmp[2] * dt;
+    if (z > c.h - 0.02) z = c.h - 0.02;
+    c.life[p] -= dt;
+    if (x >= c.L - c.dxs * 0.5) { spawn(c, p, true); continue; }
+    if (c.life[p] <= 0 || solidAt(c, x, y, z)) { spawn(c, p, c.life[p] > 0 && x < c.dxs); continue; }
+    P[p * 3] = x; P[p * 3 + 1] = y; P[p * 3 + 2] = z;
+    const o = (p * TRAIL + h) * 3; c.tr[o] = x; c.tr[o + 1] = y; c.tr[o + 2] = z;
+    c.ts[p * TRAIL + h] = Math.hypot(vtmp[0], vtmp[1], vtmp[2]);
+  }
+}
+const LUT = new Float32Array(256 * 3), FADE = new Float32Array(TRAIL);
+for (let i = 0; i < 256; i++) turbo(i / 255, LUT, i * 3);
+for (let k = 0; k < TRAIL; k++) FADE[k] = Math.pow(1 - k / (TRAIL - 1), 1.3) * 0.9;
+function writeLines(c) {
+  const pos = c.lines.geometry.attributes.position.array, col = c.lines.geometry.attributes.color.array;
+  const tr = c.tr, ts = c.ts, h = c.head, iv = 255 / VMAX;
+  let v = 0;
+  for (let p = 0; p < c.N; p++) {
+    const base = p * TRAIL;
+    for (let k = 0; k < TRAIL - 1; k++) {
+      const a = (h - k + TRAIL) % TRAIL, b = (h - k - 1 + TRAIL) % TRAIL;
+      const fa = FADE[k], fb = FADE[k + 1];
+      const oa = (base + a) * 3, ob = (base + b) * 3;
+      pos[v] = tr[oa]; pos[v + 1] = tr[oa + 2]; pos[v + 2] = -tr[oa + 1];
+      pos[v + 3] = tr[ob]; pos[v + 4] = tr[ob + 2]; pos[v + 5] = -tr[ob + 1];
+      const ca = Math.min((ts[base + a] * iv) | 0, 255) * 3, cb = Math.min((ts[base + b] * iv) | 0, 255) * 3;
+      col[v] = LUT[ca] * fa; col[v + 1] = LUT[ca + 1] * fa; col[v + 2] = LUT[ca + 2] * fa;
+      col[v + 3] = LUT[cb] * fb; col[v + 4] = LUT[cb + 1] * fb; col[v + 5] = LUT[cb + 2] * fb;
+      v += 6;
+    }
+  }
+  c.lines.geometry.attributes.position.needsUpdate = true; c.lines.geometry.attributes.color.needsUpdate = true;
+}
+
+// ---------- camera presets
+let ext = { X: Lmax, Z: totalW };
+function cam(kind) {
+  const X = ext.X, Z = ext.Z, R = Math.max(X, Z), hx = cases[0].h * exag;
+  const c = cases.find((q) => q.visible && q.hulls.length) || cases.find((q) => q.visible) || cases[0];
+  const hb = c.hulls, xb = hb.length ? (Math.min(...hb.map((q) => q[0])) + Math.max(...hb.map((q) => q[1]))) / 2 : c.L / 3;
+  const tx = c.xw + xb;
+  if (kind === "top") { camera.position.set(0, R * 1.05, 0.01); controls.target.set(0, 0, 0); }
+  else if (kind === "side") { camera.position.set(0, hx * 1.2, Z / 2 + X * 0.75); controls.target.set(0, hx * 0.4, 0); }
+  else if (kind === "near") { camera.position.set(tx - 26, hx + 14, c.zw + c.W * 0.55); controls.target.set(tx + 18, hx * 0.25, c.zw); }
+  else { camera.position.set(-X * 0.62, R * 0.42, Z / 2 + R * 0.48); controls.target.set(X * 0.04, 0, 0); }
+  controls.update();
+}
+
+// ---------- panel
+$("ttl").textContent = D.title; $("subt").textContent = D.subtitle;
+const caseBox = $("cases");
+cases.forEach((c, k) => {
+  const l = document.createElement("label"); l.className = "case";
+  l.innerHTML = `<input type="checkbox" id="vis${k}" checked><span class="chip" style="background:${c.color}"></span><span></span>`;
+  l.lastChild.textContent = c.label; caseBox.appendChild(l);
+  l.querySelector("input").addEventListener("change", (e) => { c.visible = e.target.checked; ext = layout(); paintSlice(); });
+});
+(function stats() {
+  const withS = cases.filter((c) => c.stats);
+  const rows = [
+    ["กำลังรวม (kW)", "P_kW", 0, null], ["แรงดันน้ำ (kN)", "T_kN", 1, "max"],
+    ["ระดับน้ำเหนือเรือ (ซม.)", "d_eta_cm", 2, "min"], ["kW ต่อลด 1 ซม.", "kW_per_cm", 0, "min"],
+    ["ผิวน้ำท้ายเรือเร็วขึ้น (%)", "us_gain_pct", 1, "max"], ["แรงเฉือนท้องน้ำสูงสุด (N/ม²)", "tau_max", 1, "min"],
+    ["Q เพิ่ม ถ้าวางทุก 1 กม. (%)", "dQ_net_pct", 1, "max"]];
+  if (withS.length > 3) {   // หลายกรณี: หนึ่งแถวต่อกรณี เรียงตามความคุ้มค่า (kW ต่อการลด 1 ซม.)
+    const cols = [["kW", "P_kW", 0, null], ["ลดน้ำ ซม.", "d_eta_cm", 1, "min"], ["kW/ซม.", "kW_per_cm", 0, "min"],
+                  ["Q เพิ่ม %", "dQ_net_pct", 1, "max"], ["τ สูงสุด", "tau_max", 0, "min"]];
+    const best = cols.map(([, k, , b]) => { const v = withS.map((c) => c.stats[k]).filter((x) => x != null); return b === "max" ? Math.max(...v) : b === "min" ? Math.min(...v) : null; });
+    const order = withS.slice().sort((a, b) => (a.stats.kW_per_cm ?? 1e9) - (b.stats.kW_per_cm ?? 1e9));
+    let h2 = "<thead><tr><th>อุปกรณ์</th>" + cols.map((q) => `<th>${q[0]}</th>`).join("") + "</tr></thead><tbody>";
+    order.forEach((c) => {
+      h2 += `<tr><td><span class="chip" style="display:inline-block;background:${c.color};margin-right:5px"></span>${c.label}</td>` +
+        cols.map(([, k, dp], i) => { const v = c.stats[k]; return `<td class="${v === best[i] ? "best" : ""}">${v == null ? "–" : v.toFixed(dp)}</td>`; }).join("") + "</tr>";
+    });
+    if (withS[0].stats.tau_base != null) h2 += `<tr><td>ไม่มีเรือ (τ ปกติ)</td><td colspan="4"></td><td>${withS[0].stats.tau_base.toFixed(1)}</td></tr>`;
+    $("stats").innerHTML = h2 + "</tbody>"; $("stats").classList.add("many");
+    return;
+  }
+  let html = "<thead><tr><th></th>" + withS.map((c) => `<th><span class="chip" style="display:inline-block;background:${c.color};margin-right:4px"></span>${c.label.replace(/ ×\d+$/, "")}</th>`).join("") + "</tr></thead><tbody>";
+  rows.forEach(([name, key, dp, best]) => {
+    const vals = withS.map((c) => c.stats[key]);
+    const ok = vals.filter((v) => v != null);
+    const bv = best === "max" ? Math.max(...ok) : best === "min" ? Math.min(...ok) : null;
+    html += `<tr><td>${name}</td>` + vals.map((v) => `<td class="${v === bv && withS.length > 1 ? "best" : ""}">${v == null ? "–" : v.toFixed(dp)}</td>`).join("") + "</tr>";
+  });
+  const base = cases.find((c) => !c.stats);
+  if (withS.length && withS[0].stats.tau_base != null) html += `<tr><td>แรงเฉือนปกติ (ไม่มีเรือ)</td><td colspan="${withS.length}">${withS[0].stats.tau_base.toFixed(1)}</td></tr>`;
+  $("stats").innerHTML = html + "</tbody>";
+})();
+// ---------- ปริมาณน้ำ: Q′/Q = √(1 + F/(ρ g A L S))
+const RHO = 1000, GRAV = 9.81;
+const withStats = cases.filter((c) => c.stats);
+const Q0 = (withStats[0] || cases[0]).stats ? withStats[0].stats.Q : cases[0].Q;
+const A0 = withStats.length ? withStats[0].stats.Q / withStats[0].stats.V : cases[0].Q / cases[0].V;
+// ความชัน: ใช้ค่าที่ส่งออกมา ถ้าไม่มี คำนวณย้อนจากผลที่ระยะ 1 กม.
+const S0 = (() => {
+  const c = cases.find((q) => q.S); if (c) return c.S;
+  const est = withStats.map((q) => { const s = q.stats, r = Math.pow(1 + s.dQ_pct / 100, 2) - 1; return r > 1e-9 ? s.T_kN * 1000 / (RHO * GRAV * A0 * 1000 * r) : null; }).filter((v) => v);
+  est.sort((a, b) => a - b); return est.length ? est[est.length >> 1] : null;
+})();
+const dq = (F, km) => Math.sqrt(Math.max(1 + F / (RHO * GRAV * A0 * km * 1000 * S0), 0)) - 1;
+function flows() {
+  const km = +$("km").value; $("kmo").textContent = km + " กม.";
+  const rows = cases.map((c) => {
+    if (!c.stats || !S0) return { c, q: Q0, add: 0, cap: 0, pct: 0 };
+    const s = c.stats, f = dq(s.F_net_kN * 1000, km), fc = dq(s.T_kN * 1000, km);
+    return { c, q: Q0 * (1 + f), add: Q0 * f, cap: Q0 * (1 + fc), pct: 100 * f, P: s.P_kW };
+  });
+  const qmax = Math.max(...rows.map((r) => Math.max(r.q, r.cap))) * 1.04;
+  const W = (q) => (100 * q / qmax).toFixed(2) + "%";
+  $("qbars").innerHTML = rows.map((r) => {
+    const add = r.add, sign = add >= 0 ? "+" : "−";
+    const right = r.c.stats ? `${r.q.toFixed(1)} · ${sign}${Math.abs(add).toFixed(1)} (${sign}${Math.abs(r.pct).toFixed(1)}%)` : `${r.q.toFixed(1)} (ปกติ)`;
+    const lo = Math.min(Q0, r.q), hi = Math.max(Q0, r.q);
+    return `<div class="qrow"><div class="qhead"><b><span class="chip" style="display:inline-block;background:${r.c.color};margin-right:6px"></span>${r.c.label}</b><span>${right}</span></div>
+      <div class="qtrack"><div class="qbase" style="width:${W(lo)}"></div>
+      <div class="qadd" style="left:${W(lo)};width:${W(hi - lo)};background:${add >= 0 ? r.c.color : "#d9536f"}"></div>
+      ${r.c.stats ? `<div class="qcap" style="left:${W(r.cap)}"></div>` : ""}</div></div>`;
+  }).join("");
+  $("qsum").innerHTML = rows.filter((r) => r.c.stats).sort((a, b) => b.add - a.add).map((r) => {
+    const per = r.P > 0 ? r.add / (r.P / 100) : 0;
+    return r.add > 0.005
+      ? `<li>${r.c.label} (${r.P.toFixed(0)} kW): เพิ่มการไหล <b>+${r.add.toFixed(1)} ม³/วิ</b> (+${r.pct.toFixed(1)}%) ≈ <b>${per.toFixed(2)}</b> ม³/วิ ต่อ 100 kW</li>`
+      : `<li>${r.c.label} (${r.P.toFixed(0)} kW): <b>ไม่เพิ่มการไหล</b> (${r.add.toFixed(2)} ม³/วิ) — แรงขับน้อยกว่าแรงต้านของตัวทุ่น</li>`;
+  }).join("") || "<li>ไม่มีกรณีที่มีเรือ</li>";
+}
+if (!S0) $("qsec").hidden = true;
+else { flows(); $("km").oninput = flows; }
+
+(function chart() {
+  const svg = $("chart"), W = 300, H = 130, l = 30, r = 6, t = 8, b = 20;
+  const all = cases.flatMap((c) => c.prof.eta), lo = Math.min(...all, 0), hi = Math.max(...all, 0);
+  const pad = (hi - lo) * 0.08 || 1, y0 = lo - pad, y1 = hi + pad;
+  const X = (x) => l + (x / Lmax) * (W - l - r), Y = (v) => t + (1 - (v - y0) / (y1 - y0)) * (H - t - b);
+  let s = "";
+  const step = Math.pow(10, Math.floor(Math.log10((y1 - y0) / 3))), m = [1, 2, 5].find((q) => (y1 - y0) / (q * step) <= 5) * step;
+  for (let v = Math.ceil(y0 / m) * m; v <= y1; v += m) s += `<line x1="${l}" x2="${W - r}" y1="${Y(v)}" y2="${Y(v)}" stroke="#233740" stroke-width="${Math.abs(v) < 1e-9 ? 1 : 0.5}"/><text x="${l - 4}" y="${Y(v) + 3}" text-anchor="end">${+v.toFixed(2)}</text>`;
+  for (let x = 0; x <= Lmax; x += 50) s += `<text x="${X(x)}" y="${H - 6}" text-anchor="middle">${x}</text>`;
+  s += `<text x="${W - r}" y="${H - 6}" text-anchor="end">ม.</text>`;
+  const hb = cases.flatMap((c) => c.hulls);
+  if (hb.length) { const a = Math.min(...hb.map((q) => q[0])), e = Math.max(...hb.map((q) => q[1])); s += `<rect x="${X(a)}" y="${t}" width="${X(e) - X(a)}" height="${H - t - b}" fill="#d9e5e7" opacity="0.06"/><text x="${(X(a) + X(e)) / 2}" y="${t + 9}" text-anchor="middle">เรือ</text>`; }
+  cases.forEach((c) => { s += `<polyline fill="none" stroke="${c.color}" stroke-width="1.6" points="${c.prof.x.map((x, i) => X(x).toFixed(1) + "," + Y(c.prof.eta[i]).toFixed(1)).join(" ")}"/>`; });
+  svg.innerHTML = s;
+})();
+(function legends() {
+  const stops = [], o = [0, 0, 0];
+  for (let i = 0; i <= 10; i++) { turbo(i / 10, o, 0); stops.push(`rgb(${o.map((v) => Math.round(v * 255)).join(",")}) ${i * 10}%`); }
+  $("spbar").style.background = `linear-gradient(90deg, ${stops.join(",")})`;
+  $("sptk").innerHTML = [0, 0.25, 0.5, 0.75, 1].map((f) => `<span>${(f * VMAX).toFixed(1)}</span>`).join("");
+  const ts = [];
+  for (let i = 0; i <= 10; i++) { shearCol(i / 10, o, 0); ts.push(`rgb(${o.map((v) => Math.round(v * 255)).join(",")}) ${i * 10}%`); }
+  $("tbar").style.background = `linear-gradient(90deg, ${ts.join(",")})`;
+  $("ttk").innerHTML = [0, 0.25, 0.5, 0.75, 1].map((f) => { const v = TAU_LO * Math.pow(TAU_HI / TAU_LO, f); return `<span>${f ? "" : "≤"}${v < 10 ? v.toFixed(1) : v.toFixed(0)}</span>`; }).join("");
+})();
+$("slz").max = String(cases[0].nz - 1); $("slz").value = String(Math.floor((cases[0].nz - 1) * 0.6));
+
+let playing = !window.matchMedia("(prefers-reduced-motion: reduce)").matches, simSpeed = 6;
+function setPlay(v) { playing = v; $("play").textContent = v ? "หยุด" : "เล่น"; $("play").setAttribute("aria-pressed", String(v)); }
+setPlay(playing);
+$("play").onclick = () => setPlay(!playing);
+$("spd").oninput = (e) => { simSpeed = +e.target.value; $("spdo").textContent = simSpeed + "×"; };
+$("exag").oninput = (e) => { exag = +e.target.value; $("exago").textContent = exag + "×"; layout(); };
+$("npart").onchange = (e) => cases.forEach((c) => { initParticles(c, +e.target.value); writeLines(c); });
+$("shear").onchange = paintBed;
+$("surf").onchange = (e) => cases.forEach((c) => (c.surf.visible = e.target.checked));
+$("slice").onchange = paintSlice; $("slz").oninput = paintSlice;
+document.querySelectorAll("[data-cam]").forEach((b) => (b.onclick = () => cam(b.dataset.cam)));
+$("toggle").onclick = () => $("panel").classList.toggle("closed");
+
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight, p = w > 720 && !$("panel").classList.contains("closed") ? 352 : 0;
+  renderer.setSize(w, h, false); camera.aspect = w / h;
+  if (p) camera.setViewOffset(w + p, h, 0, 0, w, h); else camera.clearViewOffset();   // เลื่อนภาพพ้นแผงควบคุม
+  camera.updateProjectionMatrix();
+}
+window.addEventListener("resize", resize);
+
+ext = layout(); paintBed(); paintSlice();
+const N0 = cases.length > 3 ? 3000 : 8000;
+$("npart").value = String(N0);
+cases.forEach((c) => { initParticles(c, N0); writeLines(c); });
+resize(); cam("oblique");
+if (document.fonts) document.fonts.ready.then(() => cases.forEach((c) => { const old = c.lab; c.lab = textSprite(c.label, c.color); c.lab.center.set(0, 0); c.lab.position.copy(old.position); c.flat.remove(old); c.flat.add(c.lab); }));
+
+let last = performance.now(), simT = 0, fpsT = 0, frames = 0;
+function loop(now) {
+  requestAnimationFrame(loop);
+  if (now - last < 32) return;          // จำกัด ~30 fps ให้ GPU ทำงานน้อยลง
+  const rdt = Math.min((now - last) / 1000, 0.05); last = now;
+  if (playing) {
+    const dt = rdt * simSpeed; simT += dt;
+    cases.forEach((c) => { if (c.visible) { step(c, dt); writeLines(c); } });
+  }
+  controls.update(); renderer.render(scene, camera);
+  frames++; fpsT += rdt;
+  if (fpsT > 1) { $("hud").textContent = `เวลาจำลอง ${simT.toFixed(0)} วิ · ${Math.round(frames / fpsT)} fps`; frames = 0; fpsT = 0; }
+}
+requestAnimationFrame(loop);
+})();
+</script>
