@@ -206,8 +206,10 @@ if (ALL.scenes && ALL.scenes.length) {
   document.getElementById("scenesec").hidden = false;
 }
 if (ALL.links && ALL.links.length) {
+  // บน GitHub Pages / เครื่องตัวเอง ใช้ไฟล์ในโปรเจกต์ (local) — ลิงก์ Artifact เปิดได้เฉพาะเจ้าของ
+  const site = /github\.io$|^localhost$|^127\./.test(location.hostname);
   document.getElementById("nav").innerHTML = ALL.links.map((l) =>
-    `<li><a href="${esc(l.href)}" target="_blank" rel="noopener">${esc(l.label)}<span>${esc(l.note || "")}</span></a></li>`).join("");
+    `<li><a href="${esc(site && l.local ? l.local : l.href)}" target="_blank" rel="noopener">${esc(l.label)}<span>${esc(l.note || "")}</span></a></li>`).join("");
   document.getElementById("navsec").hidden = false;
 }
 // ข้อมูลสนามความเร็วของหน้าที่มีหลายกรณีเก็บแยกไฟล์ (src) — โหลดก่อนเริ่ม

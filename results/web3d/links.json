@@ -1,4 +1,26 @@
-[{"label": "ผลทดสอบเรือดันน้ำ", "note": "สรุปและอันดับความคุ้มค่า", "href": "https://claude.ai/artifact/4Ux9aGxeW28uDeYGU8LkmT"},
- {"label": "รู้จักอุปกรณ์ดันน้ำ", "note": "หลักการและแผ่นข้อมูล 8 แบบ", "href": "https://claude.ai/artifact/BYHNRDJQbgMDRPGiZYQUtU"},
- {"label": "ม่านน้ำเทียบใบพัดใหญ่", "note": "3 มิติ", "href": "https://claude.ai/artifact/ANtNr7iZx6SH1rFP1KxjF4"},
- {"label": "เรือลากจูง", "note": "3 มิติ", "href": "https://claude.ai/artifact/JE1Jv9MbfgKN2gUZhTfXmz"}]
+[
+ {
+  "label": "ผลทดสอบเรือดันน้ำ",
+  "note": "สรุปและอันดับความคุ้มค่า",
+  "href": "https://claude.ai/artifact/4Ux9aGxeW28uDeYGU8LkmT",
+  "local": "../report/boat_test_summary.html"
+ },
+ {
+  "label": "รู้จักอุปกรณ์ดันน้ำ",
+  "note": "หลักการและแผ่นข้อมูล 8 แบบ",
+  "href": "https://claude.ai/artifact/BYHNRDJQbgMDRPGiZYQUtU",
+  "local": "../report/devices.html"
+ },
+ {
+  "label": "ม่านน้ำเทียบใบพัดใหญ่",
+  "note": "3 มิติ",
+  "href": "https://claude.ai/artifact/ANtNr7iZx6SH1rFP1KxjF4",
+  "local": "curtain_vs_propeller.html"
+ },
+ {
+  "label": "เรือลากจูง",
+  "note": "3 มิติ",
+  "href": "https://claude.ai/artifact/JE1Jv9MbfgKN2gUZhTfXmz",
+  "local": "tugboat.html"
+ }
+]
