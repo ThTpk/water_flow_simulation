@@ -18,6 +18,7 @@
   --font-data: "IBM Plex Mono", ui-monospace, "Consolas", monospace;
   color-scheme: dark;
 }
+[hidden] { display: none !important; }
 html, body { height: 100%; }
 body { background: var(--ground); color: var(--fg); font-family: var(--font-body); font-size: 13.5px; overflow: hidden; }
 #stage { position: fixed; inset: 0; }
@@ -134,12 +135,17 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
 
   <div class="sec" id="qsec">
     <span class="lbl">ปริมาณน้ำที่ไหล Q (ม³/วิ)</span>
-    <div class="row"><label for="km">วางกลุ่มเรือซ้ำทุก</label><input id="km" type="range" min="0.5" max="5" step="0.5" value="1"><output id="kmo">1 กม.</output></div>
+    <div class="btns" role="group" aria-label="การวางกลุ่มเรือ">
+      <button type="button" data-qmode="rep" aria-pressed="true">วางซ้ำเป็นระยะ</button>
+      <button type="button" data-qmode="one" aria-pressed="false">ไม่วางซ้ำ (กลุ่มเดียว)</button>
+    </div>
+    <div class="row" id="rowkm"><label for="km">วางกลุ่มเรือซ้ำทุก</label><input id="km" type="range" min="0.5" max="5" step="0.5" value="1"><output id="kmo">1 กม.</output></div>
+    <div class="row" id="rowlr" hidden><label for="lr">กลุ่มเดียวในลำน้ำยาว</label><input id="lr" type="range" min="5" max="100" step="5" value="20"><output id="lro">20 กม.</output></div>
     <div id="qbars" class="cases"></div>
     <ul class="qsum" id="qsum"></ul>
     <p class="note">ในช่วงจำลอง <span id="lnote">150</span> ม. ปริมาณน้ำที่ทางเข้าถูกกำหนดไว้ ค่า Q ที่เพิ่มจึงประมาณจากแรงสุทธิที่น้ำได้รับจริง
-      (หักแรงต้านตัวเรือและแรงเสียดทานที่เพิ่มแล้ว) ด้วยสมดุลโมเมนตัม Q′/Q = √(1 + F / ρgALS) เมื่อวางกลุ่มเรือซ้ำทุกระยะ L
-      ตลอดลำน้ำ — เส้นประ = ขอบเขตบนถ้าแรงขับทั้งหมดถึงน้ำ</p>
+      (หักแรงต้านตัวเรือและแรงเสียดทานที่เพิ่มแล้ว) ด้วยสมดุลโมเมนตัม Q′/Q = √(1 + F / ρgALS) <span id="qnote">เมื่อวางกลุ่มเรือซ้ำทุกระยะ L
+      ตลอดลำน้ำ</span> — เส้นประ = ขอบเขตบนถ้าแรงขับทั้งหมดถึงน้ำ</p>
   </div>
 
   <div class="sec">
@@ -559,8 +565,17 @@ const S0 = (() => {
   est.sort((a, b) => a - b); return est.length ? est[est.length >> 1] : null;
 })();
 const dq = (F, km) => Math.sqrt(Math.max(1 + F / (RHO * GRAV * A0 * km * 1000 * S0), 0)) - 1;
+// วางซ้ำ: L = ระยะห่างระหว่างกลุ่ม; กลุ่มเดียว: L = ความยาวลำน้ำทั้งช่วงที่ระดับน้ำปลายทั้งสองด้านคงที่
+let qmode = "rep";
+const QNOTE = {
+  rep: "เมื่อวางกลุ่มเรือซ้ำทุกระยะ L ตลอดลำน้ำ",
+  one: "เมื่อมีกลุ่มเรือกลุ่มเดียวในลำน้ำยาว L ที่ระดับน้ำต้นน้ำและปลายน้ำคงที่ (เช่น ระหว่างประตูน้ำกับปากคลอง) แรงของกลุ่มเดียวกระจายไปทั้งลำน้ำ ลำน้ำยิ่งยาว Q ยิ่งเพิ่มน้อย ผลหลักจึงเป็นระดับน้ำที่ลดลงเฉพาะช่วงใกล้เรือ",
+};
 function flows() {
-  const km = +$("km").value; $("kmo").textContent = km + " กม.";
+  const one = qmode === "one";
+  $("rowkm").hidden = one; $("rowlr").hidden = !one; $("qnote").textContent = QNOTE[qmode];
+  const km = one ? +$("lr").value : +$("km").value;
+  $(one ? "lro" : "kmo").textContent = km + " กม.";
   const rows = cases.map((c) => {
     if (!c.stats || !S0) return { c, q: Q0, add: 0, cap: 0, pct: 0 };
     const s = c.stats, f = dq(s.F_net_kN * 1000, km), fc = dq(s.T_kN * 1000, km);
@@ -585,7 +600,14 @@ function flows() {
   }).join("") || "<li>ไม่มีกรณีที่มีเรือ</li>";
 }
 if (!S0) $("qsec").hidden = true;
-else { flows(); $("km").oninput = flows; }
+else {
+  flows(); $("km").oninput = flows; $("lr").oninput = flows;
+  document.querySelectorAll("[data-qmode]").forEach((b) => b.onclick = () => {
+    qmode = b.dataset.qmode;
+    document.querySelectorAll("[data-qmode]").forEach((q) => q.setAttribute("aria-pressed", q === b));
+    flows();
+  });
+}
 
 (function chart() {
   const svg = $("chart"), W = 300, H = 130, l = 30, r = 6, t = 8, b = 20;
