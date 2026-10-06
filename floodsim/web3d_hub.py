@@ -26,7 +26,8 @@ def page_meta(path: str) -> dict:
     return dict(title=d["title"], subtitle=d["subtitle"])
 
 
-def build(scenes: list[tuple[str, str, str, str]], out: str, title: str, links: list[dict]) -> list[str]:
+def build(scenes: list[tuple[str, str, str, str]], out: str, title: str, links: list[dict],
+          remarks: dict | None = None) -> list[str]:
     """scenes = [(key, html, label, note)] → เขียนหน้าหลัก คืนรายชื่อไฟล์ทั้งหมด (สำหรับเผยแพร่)"""
     tpl = open(os.path.join(os.path.dirname(__file__), "web3d_template.html"), encoding="utf-8").read()
     outdir = os.path.dirname(os.path.abspath(out))
@@ -43,7 +44,8 @@ def build(scenes: list[tuple[str, str, str, str]], out: str, title: str, links: 
                 json.dump(dict(u=c["u"], tau=c["tau"]), f)
             files.append(fn)
             lite.append({**{kk: v for kk, v in c.items() if kk not in ("u", "tau")}, "src": f"{stem}/{key}/case{k}.json"})
-        data.append(dict(key=key, label=label, note=note, **meta, cases=lite))
+        data.append(dict(key=key, label=label, note=note, **meta, cases=lite,
+                         **({"remark": remarks[key]} if remarks and key in remarks else {})))
     blob = json.dumps(dict(scenes=data, links=links), ensure_ascii=False, separators=(",", ":"))
     with open(out, "w", encoding="utf-8") as f:
         f.write(tpl.replace("__TITLE__", title).replace("__DATA__", blob.replace("</", "<\\/")))
@@ -55,6 +57,8 @@ def main(argv=None):
     ap.add_argument("--scene", nargs=3, action="append", required=True, metavar=("KEY=HTML", "LABEL", "NOTE"),
                     help="ลำน้ำหนึ่ง: key=ไฟล์หน้า 3D, ชื่อปุ่ม, คำอธิบายสั้น (ใส่ได้หลายครั้ง; อันแรกเป็นค่าเริ่มต้น)")
     ap.add_argument("--links", default=None, help="ไฟล์ JSON รายการลิงก์เมนูหน้าอื่น")
+    ap.add_argument("--remark", nargs=2, action="append", default=[], metavar=("KEY", "TEXT"),
+                    help="หมายเหตุใต้ชื่อของลำน้ำ KEY")
     ap.add_argument("--title", default="เทียบเรือดันน้ำทุกแบบ")
     ap.add_argument("--out", required=True)
     a = ap.parse_args(argv)
@@ -65,7 +69,7 @@ def main(argv=None):
         scenes.append((key, html, label, note))
     # อ่านหน้าเดิมทั้งหมดก่อนเขียน — หน้าออกอาจเป็นไฟล์เดียวกับหน้าใดหน้าหนึ่ง
     links = json.load(open(a.links, encoding="utf-8")) if a.links else []
-    files = build(scenes, a.out, a.title, links)
+    files = build(scenes, a.out, a.title, links, dict(a.remark))
     size = sum(os.path.getsize(f) for f in files)
     print(f"saved {os.path.abspath(a.out)} ({len(files)} ไฟล์, {size/1e6:.1f} MB)")
 

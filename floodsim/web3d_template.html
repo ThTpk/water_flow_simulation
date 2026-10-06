@@ -111,6 +111,7 @@ button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px s
   <div>
     <h1 id="ttl"></h1>
     <p class="sub" id="subt"></p>
+    <p class="note" id="remark" hidden></p>
   </div>
 
   <div class="sec" id="scenesec" hidden>
@@ -513,7 +514,8 @@ function cam(kind) {
 }
 
 // ---------- panel
-$("ttl").textContent = D.title; $("subt").textContent = D.subtitle; $("lnote").textContent = Math.round(Lmax);
+$("ttl").textContent = D.title; $("subt").textContent = D.subtitle;
+if (D.remark) { $("remark").textContent = D.remark; $("remark").hidden = false; } $("lnote").textContent = Math.round(Lmax);
 const caseBox = $("cases");
 cases.forEach((c, k) => {
   const l = document.createElement("label"); l.className = "case";
